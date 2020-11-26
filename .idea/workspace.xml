@@ -28,7 +28,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="348c4bc0-bfa1-4f77-8a29-ac91a7a8e14e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/sandbox.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sandbox.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/connection.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/connection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/order_entry.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/order_entry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/soe.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/soe.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -52,6 +56,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cf.first.check.clang-format" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunManager">
     <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
@@ -59,6 +64,32 @@
         <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="sandbox" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -68,7 +99,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1606384639542</updated>
-      <workItem from="1606384640577" duration="1213000" />
+      <workItem from="1606384640577" duration="1438000" />
     </task>
     <servers />
   </component>
@@ -85,5 +116,43 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="3334" y="391" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1606410972942">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state x="3334" y="391" key="#com.intellij.execution.impl.EditConfigurationsDialog/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606410972942" />
+    <state width="2465" height="813" key="GridCell.Tab.0.bottom" timestamp="1606414188484">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2465" height="813" key="GridCell.Tab.0.bottom/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414188484" />
+    <state width="2465" height="813" key="GridCell.Tab.0.center" timestamp="1606414188484">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2465" height="813" key="GridCell.Tab.0.center/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414188484" />
+    <state width="2465" height="813" key="GridCell.Tab.0.left" timestamp="1606414188484">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2465" height="813" key="GridCell.Tab.0.left/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414188484" />
+    <state width="2465" height="813" key="GridCell.Tab.0.right" timestamp="1606414188484">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2465" height="813" key="GridCell.Tab.0.right/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414188484" />
+    <state x="3365" y="368" width="1022" height="737" key="SettingsEditor" timestamp="1606410965517">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state x="3365" y="368" width="1022" height="737" key="SettingsEditor/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606410965517" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
+          <line>153</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

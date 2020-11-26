@@ -9,8 +9,8 @@ Sandbox implements a simple order driven limit order book (LOB) and exchange sim
 ```python
 python app/main.py
 ```
-When started, the exchange simulator initializes the LOB according to the parameters defined in the `config.ini` file.
-After initialization, it begins to generate orders based on its model.
+When started, the exchange simulator initializes the LOB according to the configuration.
+After initialization, the simulator begins to generate order flow based on the underlying model.
 
 #### Configuration
 

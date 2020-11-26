@@ -181,7 +181,7 @@ class InboundCancelOrder:
     def from_dict(dictionary):
         order = InboundNewOrder()
         for key, value in dictionary.items():
-            setattr(order, key, value)
+            setattr(order, key.replace('-', '_'), value)
         return order
 
 

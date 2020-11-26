@@ -9,6 +9,11 @@ class ClientConnection:
         self._port = None
         self._encoding = 1
         self._handshaken = False
+        self._orders = {}
+
+    @property
+    def orders(self):
+        return self._orders
 
     @property
     def encoding(self):
