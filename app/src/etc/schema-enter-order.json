@@ -1,0 +1,72 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "InboundNewOrderMessage",
+	"type": "object",
+	"anyOf": [
+		{
+			"properties": {
+				"order-type": {
+                    "type": "string",
+					"const": "LMT"
+				},
+				"message-type": {
+                    "type": "string",
+					"const": "E"
+				},
+				"quantity": {
+					"type": "number",
+                    "exclusiveMinimum": 0
+				},
+				"price": {
+					"type": "number",
+                    "exclusiveMinimum": 0
+				},
+				"side": {
+                    "type": "string",
+					"enum": [
+						"S",
+						"B"
+					]
+				},
+				"order_id": {
+					"type": "integer",
+					"exclusiveMinimum": 0
+				}
+			},
+			"additionalProperties": false,
+			"required": [
+				"message-type",
+				"order-type",
+				"quantity",
+				"price",
+				"side"
+			]
+		},
+		{
+			"properties": {
+				"order-type": {
+					"const": "MKT"
+				},
+				"message-type": {
+					"const": "E"
+				},
+				"quantity": {
+					"type": "integer"
+				},
+				"side": {
+					"enum": [
+						"S",
+						"B"
+					]
+				}
+			},
+			"additionalProperties": false,
+			"required": [
+				"message-type",
+				"order-type",
+				"quantity",
+				"side"
+			]
+		}
+	]
+}

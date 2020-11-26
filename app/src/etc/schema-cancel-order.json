@@ -1,0 +1,19 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "InboundCancelOrderMessage",
+	"type": "object",
+	"properties": {
+				"message-type": {
+                    "type": "string",
+					"const": "X"
+				},
+                "order-id": {
+					"type": "number"
+				}
+			},
+			"additionalProperties": false,
+			"required": [
+				"message-type",
+				"order-id"
+			]
+}
