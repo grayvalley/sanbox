@@ -107,11 +107,29 @@ def _handle_order_entry_cancel_order(state, client, order):
     state.lock.acquire()
     lob = state.get_current_lob_state()
 
-    accept_message = _create_order_accepted_message(order.to_lob_format())
-    messaging.send_data(client.socket, accept_message, client.encoding)
+    # Check if this client is the owner of the requested order id
+    is_owner = order.order_id in client.orders
 
-    lob.cancel_order(order.side, order.order_id)
+    # Look up order from the book
+    if is_owner is False:
+        rejected_message = _create_order_rejected_message(order, 'Not your order.')
+        messaging.send_data(client.socket, rejected_message, client.encoding)
+        return
 
+    order_in_book = lob.get_order(order.order_id)
+
+    # If order is not found, reject cancellation
+    if order_in_book is None:
+        rejected_message = _create_order_rejected_message(order, 'OrderId not found.')
+        messaging.send_data(client.socket, rejected_message, client.encoding)
+
+    # Order was found
+    else:
+        cancel_message = _create_order_canceled_message(order_in_book)
+        messaging.send_data(client.socket, cancel_message, client.encoding)
+        lob.cancel_order(order_in_book.side, order.order_id)
+
+    lob.print()
     state.lock.release()
 
 
@@ -125,7 +143,6 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
     """
     state.lock.acquire()
     lob = state.get_current_lob_state()
-    lob.print()
 
     # Modification
     if order.order_id is not None:
@@ -157,6 +174,9 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
         # If the new order was matched immediately
         if not transactions.is_empty():
 
+            # Save the order to the clients state
+            client.orders[order.order_id] = order_in_book
+
             # Generate trade messages
             trade_messages = transactions.get_trade_messages()
 
@@ -177,11 +197,12 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
         else:
 
             # Save the order to the clients state
-            client.orders[order.order_id] = order
+            client.orders[order.order_id] = order_in_book
 
             # Publish the event via the public market data feed
             state.event_queue.put(order)
 
+    lob.print()
     state.lock.release()
 
 
@@ -193,9 +214,34 @@ def _handle_order_entry_configuration(state, request):
     return "configured"
 
 
+def _create_order_rejected_message(order, reason):
+    """
+    Creates an order rejected message from order
+    """
+    msg = {'message-type': 'R',
+           'order-id': order.order_id,
+           'reason': reason
+           }
+    return json.dumps(msg)
+
+
+def _create_order_canceled_message(order):
+    """
+    Creates an order cancelled message from order
+    """
+    msg = {'message-type': 'X',
+           'order-id': order.order_id,
+           'side': side_to_str(order.side),
+           'quantity': int(order.quantity),
+           'price': float(order.price),
+           'timestamp': str(order.timestamp)
+           }
+    return json.dumps(msg)
+
+
 def _create_order_accepted_message(order):
     """
-    Creates order accepted message from order
+    Creates an order accepted message from order
     """
     msg = {'message-type': 'Y',
            'order-type': order.order_type,
@@ -206,9 +252,6 @@ def _create_order_accepted_message(order):
            'timestamp': str(order.timestamp)
            }
     return json.dumps(msg)
-
-
-
 
 
 order_entry_message_handlers = {

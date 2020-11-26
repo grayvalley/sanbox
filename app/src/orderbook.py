@@ -219,6 +219,15 @@ class OrderBook(object):
 
         return trades
 
+    def get_order(self, order_id):
+
+        if self.bids.order_exists(order_id):
+            return self.bids.get_order(order_id)
+        elif self.asks.order_exists(order_id):
+            return self.asks.get_order(order_id)
+        else:
+            return None
+
     def cancel_order(self, side, order_id, time=None):
         if time:
             self.time = time
@@ -231,7 +240,7 @@ class OrderBook(object):
             if self.asks.order_exists(order_id):
                 self.asks.remove_order_by_id(order_id)
         else:
-            sys.exit('cancel_order() given neither "bid" nor "ask"')
+            raise ValueError('Side has to be "bid" nor "ask"')
 
     def modify_order(self, order_id, order_update, time=None):
         if time:
