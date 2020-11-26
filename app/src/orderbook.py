@@ -240,7 +240,7 @@ class OrderBook(object):
             if self.asks.order_exists(order_id):
                 self.asks.remove_order_by_id(order_id)
         else:
-            sys.exit('cancel_order() given neither "bid" nor "ask"')
+            raise ValueError('Side has to be "bid" nor "ask"')
 
     def modify_order(self, order_id, order_update, time=None):
         if time:

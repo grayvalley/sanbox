@@ -125,10 +125,11 @@ def _handle_order_entry_cancel_order(state, client, order):
 
     # Order was found
     else:
-        accepted_message = _create_order_canceled_message(order_in_book)
-        messaging.send_data(client.socket, accepted_message, client.encoding)
-        lob.cancel_order(order.side, order.order_id)
+        cancel_message = _create_order_canceled_message(order_in_book)
+        messaging.send_data(client.socket, cancel_message, client.encoding)
+        lob.cancel_order(order_in_book.side, order.order_id)
 
+    lob.print()
     state.lock.release()
 
 
