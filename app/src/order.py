@@ -1,19 +1,20 @@
 from decimal import * 
 import time, random
 
+
 class Order(object):
-    '''
+    """
     Orders represent the core piece of the exchange. Every bid/ask is an Order.
     Orders are doubly linked and have helper functions (next_order, prev_order)
     to help the exchange fullfill orders with quantities larger than a single
     existing Order.
-    '''
+    """
     def __init__(self, quote, order_list):
         self.timestamp = quote['timestamp'] # integer representing the timestamp of order creation
         self.quantity = Decimal(quote['quantity']) # decimal representing amount of thing - can be partial amounts
         self.price = Decimal(quote['price']) # decimal representing price (currency)
         self.order_id = int(quote['order_id'])
-        #self.trade_id = quote['trade_id']
+        self.side = quote['side']
         # doubly linked list to make it easier to re-order Orders for a particular price point
         self.next_order = None
         self.prev_order = None
