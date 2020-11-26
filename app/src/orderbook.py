@@ -91,9 +91,11 @@ class OrderBook(object):
                 if new_trades is not None:
                     trades.add_transactions(new_trades)
 
+            # Update order quantity
+            order['quantity'] = quantity_to_trade
+
             # If volume remains, need to update the book with new quantity
             if quantity_to_trade > 0:
-                order['quantity'] = quantity_to_trade
                 self.bids.insert_order(order)
 
         elif side == Side.S:
@@ -107,9 +109,11 @@ class OrderBook(object):
                 if new_trades is not None:
                     trades.add_transactions(new_trades)
 
+            # Update order quantity
+            order['quantity'] = quantity_to_trade
+
             # If volume remains, need to update the book with new quantity
             if quantity_to_trade > 0:
-                order['quantity'] = quantity_to_trade
                 self.asks.insert_order(order)
 
         else:

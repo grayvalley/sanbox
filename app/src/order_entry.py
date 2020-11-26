@@ -99,6 +99,22 @@ def handle_order_entry_requests(state, client):
     client.socket.close()
 
 
+def _handle_order_entry_cancel_order(state, client, order):
+    """
+    Handles cancel order request received from a client
+    and creates a response message.
+    """
+    state.lock.acquire()
+    lob = state.get_current_lob_state()
+
+    accept_message = _create_order_accepted_message(order.to_lob_format())
+    messaging.send_data(client.socket, accept_message, client.encoding)
+
+    lob.cancel_order(order.side, order.order_id)
+
+    state.lock.release()
+
+
 def _handle_order_entry_add_or_modify_order(state, client, order):
     """
     Handles add order to LOB request received from a client
@@ -110,33 +126,60 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
     state.lock.acquire()
     lob = state.get_current_lob_state()
     lob.print()
+
+    # Modification
     if order.order_id is not None:
+
+        # Send order accepted message
         accept_message = _create_order_accepted_message(order.to_lob_format())
         messaging.send_data(client.socket, accept_message, client.encoding)
+
+        # Modify order iin the LOB
         lob.modify_order(order.order_id, order.to_lob_format(), None)
+
+        # Save order to clients open orders
+        client.orders[order.order_id] = order
+
+    # New order
     else:
+
+        # We do matching first because the order is new and we
+        # need to generate order id for it.
         transactions, order_in_book = lob.process_order(
             order.to_lob_format(), False, False)
-        accept_message = _create_order_accepted_message(order_in_book)
+
+        # Send order accepted message
+        order.order_id = order_in_book['order_id']
+        order.timestamp = order_in_book['timestamp']
+        accept_message = _create_order_accepted_message(order)
         messaging.send_data(client.socket, accept_message, client.encoding)
 
+        # If the new order was matched immediately
         if not transactions.is_empty():
 
+            # Generate trade messages
             trade_messages = transactions.get_trade_messages()
 
-            # Send order executed message to client
+            # Send order executed message(s) to client
             for msg in trade_messages:
                 messaging.send_data(client.socket, json.dumps(msg), client.encoding)
 
-            # Send trades via public market data feed
+            # Publish trade(s) via the public market data feed
             for msg in trade_messages:
                 state.event_queue.put(msg)
 
-            # Send remove and modify messages via public market data feed
+            # Publish remove and modify messages via the public market data feed
             remove_and_modify_messages = transactions.get_remove_and_modify_messages()
             for msg in remove_and_modify_messages:
                 state.event_queue.put(msg)
+
+        # If the new order was just placed in the book
         else:
+
+            # Save the order to the clients state
+            client.orders[order.order_id] = order
+
+            # Publish the event via the public market data feed
             state.event_queue.put(order)
 
     state.lock.release()
@@ -155,22 +198,17 @@ def _create_order_accepted_message(order):
     Creates order accepted message from order
     """
     msg = {'message-type': 'Y',
-           'order-type': order['order_type'],
-           'side': side_to_str(order['side']),
-           'quantity': int(order['quantity']),
-           'price': float(order['price']),
-           'order-id': order['order_id'],
-           'timestamp': str(order['timestamp'])
+           'order-type': order.order_type,
+           'side': side_to_str(order.side),
+           'quantity': int(order.quantity),
+           'price': float(order.price),
+           'order-id': order.order_id,
+           'timestamp': str(order.timestamp)
            }
     return json.dumps(msg)
 
 
-def _handle_order_entry_cancel_order(state, request):
-    """
-    Handles cancel order request received from a client
-    and creates a response message.
-    """
-    return "order cancelled"
+
 
 
 order_entry_message_handlers = {
