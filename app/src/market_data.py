@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import uuid
 import time
 import jsonschema
 import src.handshake as handshake
@@ -24,7 +25,7 @@ def accept_new_market_data_clients(config, state):
             conn, addr = s.accept()
             print('Market data connection from:', addr)
             # Create order entry client connection
-            client = ClientConnection()
+            client = ClientConnection(uuid.uuid4())
             state.add_market_data_client(client)
             client.socket = conn
             host, port = addr

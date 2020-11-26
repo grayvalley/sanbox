@@ -20,7 +20,8 @@ from .transaction import (
     PassiveParty,
     AggressingParty,
     Transaction,
-    TransactionList
+    TransactionList,
+    SelfMatchCancel
 )
 
 
@@ -62,20 +63,20 @@ class OrderBook(object):
         order['timestamp'] = self.time
 
         if order_type == 'MKT':
-            trades = self.process_market_order(order, verbose)
+            trades, smp_cancels = self.process_market_order(order, verbose)
 
         elif order_type == 'LMT':
             order['price'] = Decimal(order['price'])
-            trades, order_in_book = self.process_limit_order(order, from_data, verbose)
+            trades, order_in_book, smp_cancels = self.process_limit_order(order, from_data, verbose)
         else:
             sys.exit("order_type for process_order() is neither 'market' or 'limit'")
 
-        return trades, order
+        return trades, order, smp_cancels
 
     def process_limit_order(self, order, from_data, verbose):
 
         trades = TransactionList()
-
+        smp_cancels = []
         quantity_to_trade = order['quantity']
         side = order['side']
         price = order['price']
@@ -85,10 +86,10 @@ class OrderBook(object):
             while self.asks and price >= self.asks.min_price() and quantity_to_trade > 0:
 
                 best_price_asks = self.asks.min_price_list()
-                quantity_to_trade, new_trades = self.process_order_list(
+                quantity_to_trade, new_trades, smp_cancels = self.process_order_list(
                     side, best_price_asks, quantity_to_trade, order, verbose)
 
-                if new_trades is not None:
+                if not new_trades.is_empty():
                     trades.add_transactions(new_trades)
 
             # Update order quantity
@@ -103,10 +104,10 @@ class OrderBook(object):
             while self.bids and price <= self.bids.max_price() and quantity_to_trade > 0:
 
                 best_price_bids = self.bids.max_price_list()
-                quantity_to_trade, new_trades = self.process_order_list(
+                quantity_to_trade, new_trades, smp_cancels = self.process_order_list(
                     side, best_price_bids, quantity_to_trade, order, verbose)
 
-                if new_trades is not None:
+                if not new_trades.is_empty():
                     trades.add_transactions(new_trades)
 
             # Update order quantity
@@ -119,78 +120,107 @@ class OrderBook(object):
         else:
             sys.exit('process_limit_order() given neither "bid" nor "ask"')
 
-        return trades, order
+        return trades, order, smp_cancels
 
     def process_order_list(self, side, order_list, quantity_still_to_trade, quote, verbose):
-        '''
+        """
         Takes an OrderList (stack of orders at one price) and an incoming order and matches
         appropriate trades given the order's quantity.
-        '''
+
+        """
         trades = []
+        smp_cancels = []
         trade_list = TransactionList()
         quantity_to_trade = quantity_still_to_trade
 
         # Match trades
         while len(order_list) > 0 and quantity_to_trade > 0:
 
-            # Price time priority
+            # Passive order that is first in time priority
             head_order = order_list.get_head_order()
-            traded_price = head_order.price
-            counter_party = head_order.order_id
-            new_book_quantity = None
-            if quantity_to_trade < head_order.quantity:
-                traded_quantity = quantity_to_trade
-                # Do the transaction
-                new_book_quantity = head_order.quantity - quantity_to_trade
-                head_order.update_quantity(new_book_quantity, head_order.timestamp)
-                quantity_to_trade = 0
-            elif quantity_to_trade == head_order.quantity:
-                traded_quantity = quantity_to_trade
+
+            # Self match prevention check
+            self_match = head_order.trader_id == quote['trader_id']
+            if self_match:
+                # Cancel resting order from this price level and continue
+                # matching against other orders
                 if side == Side.B:
                     self.asks.remove_order_by_id(head_order.order_id)
                 else:
                     self.bids.remove_order_by_id(head_order.order_id)
 
-                quantity_to_trade = 0
-            else:  # quantity to trade is larger than the head order
-                traded_quantity = head_order.quantity
-                if side == Side.B:
-                    self.asks.remove_order_by_id(head_order.order_id)
+                cancel = SelfMatchCancel()
+                cancel.order_id = head_order.order_id
+                cancel.side = head_order.side
+                cancel.quantity = head_order.quantity
+                cancel.price = head_order.price
+                cancel.trader_id = head_order.trader_id
+                cancel.timestamp = self.time
+                smp_cancels.append(cancel)
+                print(" ")
+            else:
+
+                traded_price = head_order.price
+                counter_party = head_order.order_id
+                new_book_quantity = None
+
+                # Head order is NOT fully consumed
+                if quantity_to_trade < head_order.quantity:
+                    traded_quantity = quantity_to_trade
+                    # Do the transaction
+                    new_book_quantity = head_order.quantity - quantity_to_trade
+                    head_order.update_quantity(new_book_quantity, head_order.timestamp)
+                    quantity_to_trade = 0
+
+                # Both orders are fully consumed
+                elif quantity_to_trade == head_order.quantity:
+                    traded_quantity = quantity_to_trade
+                    if side == Side.B:
+                        self.asks.remove_order_by_id(head_order.order_id)
+                    else:
+                        self.bids.remove_order_by_id(head_order.order_id)
+                    quantity_to_trade = 0
+
+                # quantity to trade is larger than the head order
                 else:
-                    self.bids.remove_order_by_id(head_order.order_id)
-                quantity_to_trade -= traded_quantity
+                    traded_quantity = head_order.quantity
+                    if side == Side.B:
+                        self.asks.remove_order_by_id(head_order.order_id)
+                    else:
+                        self.bids.remove_order_by_id(head_order.order_id)
+                    quantity_to_trade -= traded_quantity
 
-            '''
-            Aggressing party:
-            
-            The side of the transaction is being determined by the original side
-            of the aggressing party.
-            '''
-            aggressor = AggressingParty()
-            aggressor.id = quote['order_id']
-            aggressor.side = side
-            aggressor.order_type = quote['order_type']
-            '''
-            Passive party:
-            '''
-            passive = PassiveParty()
-            passive.id = counter_party
-            passive.order_id = head_order.order_id
-            passive.quantity_remaining = new_book_quantity
-            passive.side = get_opposite_side(side)
+                """
+                Aggressing party:
+                
+                The side of the transaction is being determined by the original side
+                of the aggressing party.
+                """
+                aggressor = AggressingParty()
+                aggressor.id = quote['order_id']
+                aggressor.side = side
+                aggressor.order_type = quote['order_type']
+                """
+                Passive party:
+                """
+                passive = PassiveParty()
+                passive.id = counter_party
+                passive.order_id = head_order.order_id
+                passive.quantity_remaining = new_book_quantity
+                passive.side = get_opposite_side(side)
 
-            transaction = Transaction()
-            transaction.aggressor = aggressor
-            transaction.passive = passive
-            transaction.timestamp = self.time
-            transaction.traded_price = traded_price
-            transaction.traded_quantity = traded_quantity
+                transaction = Transaction()
+                transaction.aggressor = aggressor
+                transaction.passive = passive
+                transaction.timestamp = self.time
+                transaction.traded_price = traded_price
+                transaction.traded_quantity = traded_quantity
 
-            trades.append(transaction)
+                trades.append(transaction)
 
         trade_list.add_transactions(trades)
 
-        return quantity_to_trade, trade_list
+        return quantity_to_trade, trade_list, smp_cancels
 
     def process_market_order(self, quote, verbose):
 

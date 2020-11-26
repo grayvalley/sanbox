@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from decimal import Decimal
 
@@ -27,7 +28,7 @@ def flag_wrong_instance_type(value, wanted_type, field_name):
 class MessageFactory:
 
     @staticmethod
-    def create(request):
+    def create(request, trader_id):
 
         message_type = request['message-type']
 
@@ -46,6 +47,9 @@ class MessageFactory:
 
         else:
             raise ValueError(f'Not implemented.')
+
+        # Assign trader id
+        message.trader_id = trader_id
 
         return message
 
@@ -71,6 +75,7 @@ class InboundNewOrder:
         self._quantity = None
         self._price = None
         self._order_id = None
+        self._trader_id = None
 
     @property
     def message_type(self):
@@ -129,6 +134,15 @@ class InboundNewOrder:
         flag_wrong_instance_type(value, int, 'order_id')
         self._order_id = value
 
+    @property
+    def trader_id(self):
+        return self._trader_id
+
+    @trader_id.setter
+    def trader_id(self, value):
+        flag_wrong_instance_type(value, uuid.UUID, 'trader_id')
+        self._trader_id = value
+
     @staticmethod
     def from_dict(dictionary):
         order = InboundNewOrder()
@@ -143,6 +157,7 @@ class InboundNewOrder:
         result.update({'quantity': Decimal(self.quantity)})
         result.update({'price': self.price})
         result.update({'order_id': self.order_id})
+        result.update({'trader_id': self.trader_id})
         return result
 
 
@@ -153,6 +168,7 @@ class InboundCancelOrder:
         self._order_type = None
         self._order_id = None
         self._quantity = None
+        self._trader_id = None
 
     @property
     def order_id(self):
@@ -162,6 +178,15 @@ class InboundCancelOrder:
     def order_id(self, value):
         flag_wrong_instance_type(value, int)
         self._order_id = value
+
+    @property
+    def trader_id(self):
+        return self._trader_id
+
+    @trader_id.setter
+    def trader_id(self, value):
+        flag_wrong_instance_type(value, uuid.UUID, 'trader_id')
+        self._trader_id = value
 
     @property
     def quantity(self):
