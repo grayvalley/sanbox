@@ -59,7 +59,7 @@ class OrderTree(object):
             # Price changed. Remove order and update tree.
             order_list = self.price_map[order.price]
             order_list.remove_order(order)
-            if len(order_list) == 0: # If there is nothing else in the OrderList, remove the price from RBtree
+            if len(order_list) == 0:  # If there is nothing else in the OrderList, remove the price from RBtree
                 self.remove_price(order.price)
             self.insert_order(order_update)
         else:

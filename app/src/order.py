@@ -10,11 +10,14 @@ class Order(object):
     existing Order.
     """
     def __init__(self, quote, order_list):
-        self.timestamp = quote['timestamp'] # integer representing the timestamp of order creation
-        self.quantity = Decimal(quote['quantity']) # decimal representing amount of thing - can be partial amounts
-        self.price = Decimal(quote['price']) # decimal representing price (currency)
+
+        self.timestamp = quote['timestamp']  # integer representing the timestamp of order creation
+        self.quantity = Decimal(quote['quantity'])  # decimal representing amount of thing - can be partial amounts
+        self.price = Decimal(quote['price'])  # decimal representing price (currency)
         self.order_id = int(quote['order_id'])
+        self.trader_id = quote.get('trader_id', None)
         self.side = quote['side']
+
         # doubly linked list to make it easier to re-order Orders for a particular price point
         self.next_order = None
         self.prev_order = None

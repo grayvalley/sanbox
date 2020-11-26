@@ -161,6 +161,17 @@ class Transaction:
         self._traded_quantity = int(value)
 
 
+class SelfMatchCancel:
+
+    def __init__(self):
+        self.order_id = None
+        self.side = None
+        self.quantity = None
+        self.price = None
+        self.timestamp = None
+        self.trader_id = None
+
+
 class TransactionList:
 
     def __init__(self):

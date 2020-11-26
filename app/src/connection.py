@@ -3,13 +3,18 @@ import socket
 
 class ClientConnection:
 
-    def __init__(self):
+    def __init__(self, id_):
         self._socket = None
         self._host = None
         self._port = None
         self._encoding = 1
         self._handshaken = False
         self._orders = {}
+        self._uuid = id_
+
+    @property
+    def uuid(self):
+        return self._uuid
 
     @property
     def orders(self):

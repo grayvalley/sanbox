@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import uuid
 import jsonschema
 import src.handshake as handshake
 import src.messaging as messaging
@@ -32,7 +33,7 @@ def accept_new_order_entry_clients(config, state):
             print('Order entry connection from:', addr)
             state.add_order_client(conn)
             # Create order entry client connection
-            client = ClientConnection()
+            client = ClientConnection(uuid.uuid4())
             client.socket = conn
             host, port = addr
             client.host = host
@@ -88,7 +89,7 @@ def handle_order_entry_requests(state, client):
             except jsonschema.exceptions.ValidationError as e:
                 pass
             else:
-                message = MessageFactory.create(request)
+                message = MessageFactory.create(request, client.uuid)
                 handler = order_entry_message_handlers[message.message_type]
                 handler(state, client, message)
 
@@ -115,20 +116,16 @@ def _handle_order_entry_cancel_order(state, client, order):
         rejected_message = _create_order_rejected_message(order, 'Not your order.')
         messaging.send_data(client.socket, rejected_message, client.encoding)
         return
-
     order_in_book = lob.get_order(order.order_id)
-
     # If order is not found, reject cancellation
     if order_in_book is None:
         rejected_message = _create_order_rejected_message(order, 'OrderId not found.')
         messaging.send_data(client.socket, rejected_message, client.encoding)
-
     # Order was found
     else:
-        cancel_message = _create_order_canceled_message(order_in_book)
+        cancel_message = _create_order_canceled_message(order_in_book, 'Client request.')
         messaging.send_data(client.socket, cancel_message, client.encoding)
         lob.cancel_order(order_in_book.side, order.order_id)
-
     lob.print()
     state.lock.release()
 
@@ -159,11 +156,17 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
 
     # New order
     else:
-
         # We do matching first because the order is new and we
         # need to generate order id for it.
-        transactions, order_in_book = lob.process_order(
+        transactions, order_in_book, smp_cancels = lob.process_order(
             order.to_lob_format(), False, False)
+
+        # Send Self-Match-Prevention cancels, if any
+        if smp_cancels != []:
+            for cancel in smp_cancels:
+                cancel_message = _create_order_canceled_message(
+                            cancel, 'Order canceled due to automatic Self-Match-Prevention.')
+                messaging.send_data(client.socket, cancel_message, client.encoding)
 
         # Send order accepted message
         order.order_id = order_in_book['order_id']
@@ -225,7 +228,7 @@ def _create_order_rejected_message(order, reason):
     return json.dumps(msg)
 
 
-def _create_order_canceled_message(order):
+def _create_order_canceled_message(order, reason):
     """
     Creates an order cancelled message from order
     """
@@ -234,7 +237,8 @@ def _create_order_canceled_message(order):
            'side': side_to_str(order.side),
            'quantity': int(order.quantity),
            'price': float(order.price),
-           'timestamp': str(order.timestamp)
+           'timestamp': str(order.timestamp),
+           'reason': reason
            }
     return json.dumps(msg)
 
