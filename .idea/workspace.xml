@@ -29,7 +29,7 @@
   <component name="ChangeListManager">
     <list default="true" id="348c4bc0-bfa1-4f77-8a29-ac91a7a8e14e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/orderbook.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/orderbook.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/order_entry.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/order_entry.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,46 +119,25 @@
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
     <state x="3334" y="391" key="#com.intellij.execution.impl.EditConfigurationsDialog/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606410972942" />
-    <state width="2465" height="813" key="GridCell.Tab.0.bottom" timestamp="1606414334758">
+    <state width="2465" height="205" key="GridCell.Tab.0.bottom" timestamp="1606414568059">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2465" height="813" key="GridCell.Tab.0.bottom/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414334758" />
-    <state width="2465" height="813" key="GridCell.Tab.0.center" timestamp="1606414334758">
+    <state width="2465" height="205" key="GridCell.Tab.0.bottom/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414568059" />
+    <state width="2465" height="205" key="GridCell.Tab.0.center" timestamp="1606414568059">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2465" height="813" key="GridCell.Tab.0.center/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414334758" />
-    <state width="2465" height="813" key="GridCell.Tab.0.left" timestamp="1606414334758">
+    <state width="2465" height="205" key="GridCell.Tab.0.center/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414568059" />
+    <state width="2465" height="205" key="GridCell.Tab.0.left" timestamp="1606414568059">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2465" height="813" key="GridCell.Tab.0.left/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414334758" />
-    <state width="2465" height="813" key="GridCell.Tab.0.right" timestamp="1606414334758">
+    <state width="2465" height="205" key="GridCell.Tab.0.left/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414568059" />
+    <state width="2465" height="205" key="GridCell.Tab.0.right" timestamp="1606414568059">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2465" height="813" key="GridCell.Tab.0.right/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414334758" />
+    <state width="2465" height="205" key="GridCell.Tab.0.right/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606414568059" />
     <state x="3365" y="368" width="1022" height="737" key="SettingsEditor" timestamp="1606410965517">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
     <state x="3365" y="368" width="1022" height="737" key="SettingsEditor/2560.0.2560.1440/0.27.2560.1413@2560.0.2560.1440" timestamp="1606410965517" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>154</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/orderbook.py</url>
-          <line>130</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/orderbook.py</url>
-          <line>97</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

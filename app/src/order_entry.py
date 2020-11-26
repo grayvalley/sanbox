@@ -157,6 +157,9 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
         # If the new order was matched immediately
         if not transactions.is_empty():
 
+            # Save the order to the clients state
+            client.orders[order.order_id] = order_in_book
+
             # Generate trade messages
             trade_messages = transactions.get_trade_messages()
 
@@ -177,7 +180,7 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
         else:
 
             # Save the order to the clients state
-            client.orders[order.order_id] = order
+            client.orders[order.order_id] = order_in_book
 
             # Publish the event via the public market data feed
             state.event_queue.put(order)
