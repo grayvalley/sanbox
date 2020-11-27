@@ -16,6 +16,8 @@ def accept_new_market_data_clients(config, state):
     """
     Accepts new market data subscriptions
     """
+    print(f"Market data subscriptions gateway listening {config.market_data_address}:{config.market_data_port}.")
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((config.market_data_address, config.market_data_port))
@@ -88,7 +90,10 @@ market_data_message_handlers = {
 }
 
 
-def dispatch_market_data(state):
+def public_market_data_feed(config, state):
+    """
+    Publishes market data events to subscribers
+    """
 
     # Sleep until the next market event
     while not state.stopper.is_set():
@@ -96,17 +101,20 @@ def dispatch_market_data(state):
         while not state.event_queue.empty():
 
             # Get next event
-            msg = state.event_queue.get()
+            event = state.event_queue.get()
 
             for client in state.get_market_data_clients():
                 if client.handshaken:
-                    if not isinstance(msg, dict):
-                        messaging.send_data(client.socket, json.dumps(msg.get_message()), client.encoding)
+                    if not isinstance(event, dict):
+                        message = event.get_message()
+                        message = json.dumps(message)
+                        messaging.send_data(client.socket, message, client.encoding)
                     else:
-                        messaging.send_data(client.socket, json.dumps(msg), client.encoding)
+                        message = json.dumps(event)
+                        messaging.send_data(client.socket, message, client.encoding)
             if state.config.display == "BOOK":
                 state.get_current_lob_state().print()
             elif state.config.display == "MESSAGES":
-                print(msg)
+                print(event)
 
     print('Market data dispatching stopped.')

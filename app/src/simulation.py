@@ -9,9 +9,6 @@ from src.event_generator import (
     EventGenerator,
     event_generation_loop
 )
-from src.market_data import (
-    dispatch_market_data
-)
 
 
 def run_market_data_simulation(config, state):
@@ -60,9 +57,6 @@ def run_market_data_simulation(config, state):
     kwargs = {'state': state, 'generator': generator}
     state.add_simulation_thread(threading.Thread(target=event_generation_loop, kwargs=kwargs))
     thread_id += 1
-
-    # Create thread that handles dispatching of market data to listeners
-    state.add_simulation_thread(threading.Thread(target=dispatch_market_data, kwargs={'state': state}))
 
     # Start the threads
     for thread in state.get_simulation_threads():

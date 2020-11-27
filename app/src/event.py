@@ -1,6 +1,7 @@
 from enum import Enum
 from decimal import Decimal
 from datetime import datetime
+
 from .side import (
     Side,
     side_to_str

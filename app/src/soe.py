@@ -3,7 +3,10 @@ import uuid
 
 from decimal import Decimal
 
-from .side import Side
+from .side import (
+    Side,
+    side_to_str
+)
 
 _MESSAGE_TYPE_CONFIG = 'C'
 _MESSAGE_TYPE_NEW_ORDER = 'E'
@@ -159,6 +162,21 @@ class InboundNewOrder:
         result.update({'order_id': self.order_id})
         result.update({'trader_id': self.trader_id})
         return result
+
+    def get_message(self):
+        """
+        Transforms the event object into SDM format.
+        """
+        message = {}
+        message.update({'message-type': 'A'})
+        message.update({'order-id': self.order_id})
+        message.update({'order-type': 'LMT'})
+        message.update({'quantity': int(self.quantity)})
+        message.update({'price': int(self.price)})
+        message.update({'side': side_to_str(self.side)})
+        message.update({'timestamp': str(self.timestamp)})
+
+        return message
 
 
 class InboundCancelOrder:
