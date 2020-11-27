@@ -140,7 +140,12 @@ class OrderBook(object):
             head_order = order_list.get_head_order()
 
             # Self match prevention check
-            self_match = head_order.trader_id == quote['trader_id']
+            trader_id = quote.get('trader_id', None)
+            if trader_id is None:
+                self_match = False
+            else:
+                self_match = head_order.trader_id == trader_id
+
             if self_match:
                 # Cancel resting order from this price level and continue
                 # matching against other orders
@@ -232,7 +237,7 @@ class OrderBook(object):
         if side == Side.B:
             while quantity_to_trade > 0 and self.asks:
                 best_price_asks = self.asks.min_price_list()
-                quantity_to_trade, new_trades = self.process_order_list(
+                quantity_to_trade, new_trades, smp_cancels  = self.process_order_list(
                     Side.B, best_price_asks, quantity_to_trade, quote, verbose)
                 if new_trades is not None:
                     trades.add_transactions(new_trades)
@@ -240,14 +245,14 @@ class OrderBook(object):
         elif side == Side.S:
             while quantity_to_trade > 0 and self.bids:
                 best_price_bids = self.bids.max_price_list()
-                quantity_to_trade, new_trades = self.process_order_list(
+                quantity_to_trade, new_trades, smp_cancels = self.process_order_list(
                     Side.S, best_price_bids, quantity_to_trade, quote, verbose)
                 if new_trades is not None:
                     trades.add_transactions(new_trades)
         else:
             sys.exit('process_market_order() recieved neither "bid" nor "ask"')
 
-        return trades
+        return trades, smp_cancels
 
     def get_order(self, order_id):
 

@@ -9,7 +9,7 @@ class ConfigReader:
 
     @property
     def simulate(self):
-        value = self._config['simulation']['simulate']
+        value = self._config['book']['simulate']
         if value == 'true':
             return True
         elif value == 'false':

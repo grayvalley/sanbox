@@ -212,7 +212,7 @@ class EventGenerator:
                 break
             time.sleep(0.010)
 
-    def create_event_and_update_lob(self, state):
+    def create_event(self, state):
         """
         Creates a new market event.
         """
@@ -250,14 +250,14 @@ def event_generation_loop(state, generator):
         state.lock.acquire()
 
         # Create event
-        event = generator.create_event_and_update_lob(state)
+        event = generator.create_event(state)
 
         if event is not None:
 
             lob = state.get_current_lob_state()
 
             if event.event_type in [EventTypes.ADD]:
-                _, _ = lob.process_order(event.to_lob_format(), False, False)
+                _, _, _ = lob.process_order(event.to_lob_format(), False, False)
                 state.event_queue.put(event.get_message())
 
             elif event.event_type in [EventTypes.CANCEL]:
@@ -267,7 +267,7 @@ def event_generation_loop(state, generator):
 
             elif event.event_type in [EventTypes.MARKET_ORDER]:
 
-                transactions, _ = lob.process_order(event.to_lob_format(), False, False)
+                transactions, _, _ = lob.process_order(event.to_lob_format(), False, False)
                 trade_messages = transactions.get_trade_messages()
 
                 # Send trades via public market data feed

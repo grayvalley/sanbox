@@ -21,7 +21,7 @@ from src.soe import (
 
 def accept_new_order_entry_clients(config, state):
 
-    print(f"Order entry listening {config.order_entry_address}:{config.order_entry_port}.")
+    print(f"Order entry gateway listening {config.order_entry_address}:{config.order_entry_port}.")
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -169,6 +169,7 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
                 messaging.send_data(client.socket, cancel_message, client.encoding)
 
         # Send order accepted message
+        # TODO: make this prettier
         order.order_id = order_in_book['order_id']
         order.timestamp = order_in_book['timestamp']
         accept_message = _create_order_accepted_message(order)
@@ -203,9 +204,11 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
             client.orders[order.order_id] = order_in_book
 
             # Publish the event via the public market data feed
+            # TODO: make this prettier
+            order.order_id = order_in_book['order_id']
+            order.timestamp = order_in_book['timestamp']
             state.event_queue.put(order)
 
-    lob.print()
     state.lock.release()
 
 
