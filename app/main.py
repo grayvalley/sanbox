@@ -58,7 +58,7 @@ def main():
         args=(config, state,))
     market_data_thread.start()
 
-    if config.simulate:
+    if config.simulate or config.initialize:
         # Initialize order book
         limit_orders = []
         for price in range(config.initial_best_ask, config.initial_best_ask + config.initial_book_levels):

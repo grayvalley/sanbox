@@ -5,13 +5,16 @@
 	"anyOf": [
 		{
 			"properties": {
+				"instrument": {
+                    "type": "number"
+				},
 				"order-type": {
                     "type": "string",
 					"const": "LMT"
 				},
 				"message-type": {
                     "type": "string",
-					"const": "E"
+					"const": "A"
 				},
 				"quantity": {
 					"type": "number",

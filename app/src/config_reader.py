@@ -18,6 +18,16 @@ class ConfigReader:
             raise ValueError('Simulate flag can only be true or false.')
 
     @property
+    def initialize(self):
+        value = self._config['book']['initialize']
+        if value == 'true':
+            return True
+        elif value == 'false':
+            return False
+        else:
+            raise ValueError('Initialize flag can only be true or false.')
+
+    @property
     def initial_best_bid(self):
         return int(self._config['book']['initial-best-bid'])
 

@@ -29,22 +29,32 @@ def accept_new_order_entry_clients(config, state):
     s.listen(5)
     while not state.stopper.is_set():
         try:
+
+            # Accept incoming connection request
             conn, addr = s.accept()
             print('Order entry connection from:', addr)
-            state.add_order_client(conn)
+
             # Create order entry client connection
-            client = ClientConnection(uuid.uuid4())
+            trader_id = uuid.uuid4()
+            client = ClientConnection(trader_id)
             client.socket = conn
             host, port = addr
             client.host = host
             client.port = port
+            print('Client:', addr, "has TraderId:", trader_id)
+
+            # Add client connection to the global state
+            state.add_order_client(trader_id, client)
+
+            # Start listening to requests
             t = threading.Thread(
                 target=handle_order_entry_requests,
                 args=(state, client)
             )
             state.add_order_client_thread(t)
             t.start()
-        except:
+
+        except Exception as e:
             pass
 
     print('Closing order entry socket.')
@@ -67,21 +77,20 @@ def handle_order_entry_requests(state, client):
     handshake.handshake(client.socket)
     client.handshaken = True
 
+    # TODO: Read at start up
+    with open('src/etc/schema-enter-order.json', 'r') as f:
+        schema_enter_order = f.read()
+    with open('src/etc/schema-cancel-order.json', 'r') as f:
+        schema_cancel_order = f.read()
+    schema_enter_order = json.loads(schema_enter_order)
+    schema_cancel_order = json.loads(schema_cancel_order)
+
     # Start listening to the client order entry requests
     while not state.stopper.is_set():
 
         request = messaging.recv_data(client.socket, 4096)
         if not request:
             break
-
-        # TODO: Read at start up
-        with open('src/etc/schema-enter-order.json', 'r') as f:
-            schema_enter_order = f.read()
-        with open('src/etc/schema-cancel-order.json', 'r') as f:
-            schema_cancel_order = f.read()
-
-        schema_enter_order = json.loads(schema_enter_order)
-        schema_cancel_order = json.loads(schema_cancel_order)
 
         for schema in [schema_enter_order, schema_cancel_order]:
             try:
@@ -92,11 +101,12 @@ def handle_order_entry_requests(state, client):
                 message = MessageFactory.create(request, client.uuid)
                 handler = order_entry_message_handlers[message.message_type]
                 handler(state, client, message)
+                break
 
     print(f'Order entry thread closed for client {client}.')
 
     # Cleanup
-    state.remove_order_client(client.socket)
+    state.remove_order_client(client.uuid)
     client.socket.close()
 
 
@@ -182,14 +192,19 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
             client.orders[order.order_id] = order_in_book
 
             # Generate trade messages
-            trade_messages = transactions.get_trade_messages()
+            aggressor_messages, passive_messages = transactions.get_trade_messages()
+
+            # Send order executed message(s) to the passive side of the transaction
+            for passive_trader_id, msg in passive_messages:
+                passive_side_client = state.get_order_client_nts(passive_trader_id)
+                messaging.send_data(passive_side_client.socket, json.dumps(msg), passive_side_client.encoding)
 
             # Send order executed message(s) to client
-            for msg in trade_messages:
+            for msg in aggressor_messages:
                 messaging.send_data(client.socket, json.dumps(msg), client.encoding)
 
             # Publish trade(s) via the public market data feed
-            for msg in trade_messages:
+            for msg in aggressor_messages:
                 state.event_queue.put(msg)
 
             # Publish remove and modify messages via the public market data feed
@@ -208,7 +223,7 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
             order.order_id = order_in_book['order_id']
             order.timestamp = order_in_book['timestamp']
             state.event_queue.put(order)
-
+    lob.print()
     state.lock.release()
 
 
@@ -263,6 +278,6 @@ def _create_order_accepted_message(order):
 
 order_entry_message_handlers = {
     'C': _handle_order_entry_configuration,
-    'E': _handle_order_entry_add_or_modify_order,
+    'A': _handle_order_entry_add_or_modify_order,
     'X': _handle_order_entry_cancel_order
 }

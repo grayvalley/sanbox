@@ -1,6 +1,5 @@
-from datetime import datetime
 from decimal import Decimal
-import numpy as np
+import uuid
 
 from .side import (
     Side,
@@ -13,9 +12,20 @@ class PassiveParty:
     def __init__(self):
 
         self._id = None
+        self._trader_id = None
         self._side = None
         self._order_id = None
         self._quantity_remaining = None
+
+    @property
+    def trader_id(self):
+        return self._trader_id
+
+    @trader_id.setter
+    def trader_id(self, value):
+        if not isinstance(value, uuid.UUID):
+            raise TypeError('TraderId has to be type of <uuid.UUID>.')
+        self._trader_id = value
 
     @property
     def id(self):
@@ -65,8 +75,19 @@ class AggressingParty:
 
     def __init__(self):
         self._id = None
+        self._trader_id = None
         self._side = None
         self._order_type = None
+
+    @property
+    def trader_id(self):
+        return self._trader_id
+
+    @trader_id.setter
+    def trader_id(self, value):
+        if not isinstance(value, uuid.UUID):
+            raise TypeError('TraderId has to be type of <uuid.UUID>.')
+        self._trader_id = value
 
     @property
     def id(self):
@@ -133,8 +154,8 @@ class Transaction:
 
     @timestamp.setter
     def timestamp(self, value):
-        if not isinstance(value, (int, datetime, str)):
-            raise TypeError(f'Timestamp has to be <int> or <datetime> or <str>, was {type(value)}.')
+        #if not isinstance(value, (int, datetime, str)):
+        #    raise TypeError(f'Timestamp has to be <int> or <datetime> or <str>, was {type(value)}.')
         self._timestamp = value
 
     @property
@@ -197,7 +218,7 @@ class TransactionList:
         """
 
         """
-        messages = []
+        aggressor_messages = []
         for transaction in self._trade_list:
 
             message = {}
@@ -213,10 +234,26 @@ class TransactionList:
                 message.update({'side': 'S'})
             else:
                 raise ValueError()
+            aggressor_messages.append(message)
 
-            messages.append(message)
+        passive_messages = []
+        for transaction in self._trade_list:
+            message.update({'message-type': 'E'})
+            message.update({'order-type': "LMT"})
+            message.update({'timestamp': str(transaction.timestamp)})
+            message.update({'price': int(transaction.traded_price)})
+            message.update({'order-id': transaction.passive.id})
+            message.update({'quantity': transaction.traded_quantity})
+            # TODO: replace with the side_to_str function
+            if transaction.passive.side == Side.B:
+                message.update({'side': 'B'})
+            elif transaction.passive.side == Side.S:
+                message.update({'side': 'S'})
+            else:
+                raise ValueError()
+            passive_messages.append((transaction.passive.trader_id, message))
 
-        return messages
+        return aggressor_messages, passive_messages
 
     def get_remove_and_modify_messages(self):
         """

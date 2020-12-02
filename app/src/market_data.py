@@ -4,9 +4,14 @@ import json
 import uuid
 import time
 import jsonschema
+from copy import deepcopy
+
 import src.handshake as handshake
 import src.messaging as messaging
 
+from .side import (
+    side_to_str
+)
 from src.connection import (
     ClientConnection
 )
@@ -50,13 +55,65 @@ def accept_new_market_data_clients(config, state):
     print(f'Stopped to accept new MD clients.')
 
 
+def _create_add_message_from_order(order):
+    """
+    Creates add message from an order
+    :param order:
+    :return:
+    """
+    message = {}
+    message.update({"message-type": "A"})
+    message.update({"order-id": order.order_id})
+    message.update({"price": int(order.price)})
+    message.update({"quantity": int(order.quantity)})
+    message.update({"side": side_to_str(order.side)})
+    message.update({"timestamp": order.timestamp})
+    message.update({"snapshot": 1})
+    return message
+
+
+def _send_order_book_snapshot(state, client):
+    """
+    Sends snapshot of the current state of the order book
+    to the subscriber.
+
+    """
+    state.lock.acquire()
+    messages = []
+    lob = state.get_current_lob_state()
+    if (lob.asks is not None) and (len(lob.asks) > 0):
+        for price, order_list in reversed(lob.asks.price_map.items()):
+            head_order = order_list.get_head_order()
+            for _ in range(0, order_list.length):
+                messages.append(_create_add_message_from_order(head_order))
+                head_order = head_order.next_order
+
+    if (lob.bids is not None) and (len(lob.bids) > 0):
+        for price, order_list in reversed(lob.bids.price_map.items()):
+            head_order = order_list.get_head_order()
+            for _ in range(0, order_list.length):
+                messages.append(_create_add_message_from_order(head_order))
+                head_order = head_order.next_order
+
+    for message in messages:
+        message = json.dumps(message)
+        messaging.send_data(client.socket, message, client.encoding)
+
+    state.lock.release()
+
+
 def handle_market_data_subscription(state, client):
     """
     Handles market data subscription requests from
     clients.
     """
+
+    # Handshake
     handshake.handshake(client.socket)
     client.handshaken = True
+
+    # Send current snapshot of the order book
+    _send_order_book_snapshot(state, client)
 
     # Start listening to the client market data requests
     while not state.stopper.is_set():
