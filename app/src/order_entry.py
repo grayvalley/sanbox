@@ -101,7 +101,6 @@ def handle_order_entry_requests(state, client):
                 message = MessageFactory.create(request, client.uuid)
                 handler = order_entry_message_handlers[message.message_type]
                 handler(state, client, message)
-                break
 
     print(f'Order entry thread closed for client {client}.')
 

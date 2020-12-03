@@ -160,6 +160,7 @@ def public_market_data_feed(config, state):
             # Get next event
             event = state.event_queue.get()
 
+            state.lock.acquire()
             for client in state.get_market_data_clients():
                 if client.handshaken:
                     if not isinstance(event, dict):
@@ -173,5 +174,6 @@ def public_market_data_feed(config, state):
                 state.get_current_lob_state().print()
             elif state.config.display == "MESSAGES":
                 print(event)
+            state.lock.release()
 
     print('Market data dispatching stopped.')

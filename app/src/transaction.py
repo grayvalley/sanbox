@@ -23,7 +23,7 @@ class PassiveParty:
 
     @trader_id.setter
     def trader_id(self, value):
-        if not isinstance(value, uuid.UUID):
+        if not isinstance(value, (uuid.UUID, type(None))):
             raise TypeError('TraderId has to be type of <uuid.UUID>.')
         self._trader_id = value
 
@@ -85,7 +85,7 @@ class AggressingParty:
 
     @trader_id.setter
     def trader_id(self, value):
-        if not isinstance(value, uuid.UUID):
+        if not isinstance(value, (uuid.UUID, type(None))):
             raise TypeError('TraderId has to be type of <uuid.UUID>.')
         self._trader_id = value
 
