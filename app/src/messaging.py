@@ -97,8 +97,10 @@ def send_data(client, data, encoding):
 		msg = data.econde('utf-8')
 	else:
 		msg = encode_char(data)
-	return client.send(msg)
 
+	if msg is not None:
+		print(msg)
+		return client.send(msg)
 
 def encode_char(string):
 	"""

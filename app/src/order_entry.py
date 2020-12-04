@@ -135,6 +135,7 @@ def _handle_order_entry_cancel_order(state, client, order):
         cancel_message = _create_order_canceled_message(order_in_book, 'Client request.')
         messaging.send_data(client.socket, cancel_message, client.encoding)
         lob.cancel_order(order_in_book.side, order.order_id)
+
     lob.print()
     state.lock.release()
 
@@ -228,7 +229,8 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
             order.order_id = order_in_book['order_id']
             order.timestamp = order_in_book['timestamp']
             state.event_queue.put(order)
-    lob.print()
+
+    #lob.print()
     state.lock.release()
 
 
