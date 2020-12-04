@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import time
+import json
 from decimal import Decimal
 from .side import (
     Side,
@@ -16,6 +17,7 @@ from src.transaction import (
     TransactionList
 )
 
+import src.messaging as messaging
 
 class EventGenerator:
 
@@ -284,13 +286,26 @@ def event_generation_loop(state, generator):
             elif event.event_type in [EventTypes.MARKET_ORDER]:
 
                 transactions, _, _ = lob.process_order(event.to_lob_format(), False, False)
-                trade_messages = transactions.get_trade_messages()
 
-                # Send trades via public market data feed
-                for msg in trade_messages:
+                # Generate trade messages
+                aggressor_messages, passive_messages = transactions.get_trade_messages()
+
+                # Send order executed message(s) to the passive side of the transaction.
+                # If passive_trader_id is None the order was simulated.
+                for passive_trader_id, msg in passive_messages:
+                    if passive_trader_id is not None:
+                        passive_side_client = state.get_order_client_nts(passive_trader_id)
+                        if passive_side_client is not None:
+                            messaging.send_data(
+                                passive_side_client.socket,
+                                json.dumps(msg),
+                                passive_side_client.encoding)
+
+                # Publish trade(s) via the public market data feed
+                for msg in aggressor_messages:
                     state.event_queue.put(msg)
 
-                # Send remove and modify messages via public market data feed
+                # Publish remove and modify messages via the public market data feed
                 remove_and_modify_messages = transactions.get_remove_and_modify_messages()
                 for msg in remove_and_modify_messages:
                     state.event_queue.put(msg)

@@ -80,7 +80,8 @@ class GlobalState:
             client = self._order_clients[trader_id]
             return client
         else:
-            raise RuntimeError(f"TraderId: {trader_id} not found from OrderClients!")
+            print(f"TraderId: {trader_id} not found from OrderClients!")
+            return None
 
     def add_market_data_client(self, client):
 

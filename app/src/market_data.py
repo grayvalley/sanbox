@@ -160,6 +160,9 @@ def public_market_data_feed(config, state):
             # Get next event
             event = state.event_queue.get()
 
+            if isinstance(event, list):
+                print(" ")
+
             state.lock.acquire()
             for client in state.get_market_data_clients():
                 if client.handshaken:
@@ -170,6 +173,7 @@ def public_market_data_feed(config, state):
                     else:
                         message = json.dumps(event)
                         messaging.send_data(client.socket, message, client.encoding)
+
             if state.config.display == "BOOK":
                 state.get_current_lob_state().print()
             elif state.config.display == "MESSAGES":
