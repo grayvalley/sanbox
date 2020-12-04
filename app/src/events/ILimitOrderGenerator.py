@@ -3,6 +3,9 @@ from IEventGenerator import (
     IEventGenerator
 )
 
+from Side import (
+    SIDE
+)
 
 class ILimitOrderGenerator(IEventGenerator):
     """
@@ -39,12 +42,12 @@ class ILimitOrderGenerator(IEventGenerator):
         best_ask = lob.get_best_ask()
 
         # Calculate price level
-        if self.side == Side.B:
+        if self.side == SIDE.B:
             if best_ask is None:  # in case ask side is empty --> peg against the best bid
                 price_level = best_bid - peg
             else:
                 price_level = best_ask - peg
-        elif self.side == Side.S:
+        elif self.side == SIDE.S:
             if best_bid is None:  # in case ask side is empty --> peg against the best ask
                 price_level = best_ask + peg
             else:

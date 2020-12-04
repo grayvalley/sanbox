@@ -305,7 +305,7 @@ def event_generation_loop(state, generator):
 
                 # Publish trade(s) via the public market data feed
                 for msg in aggressor_messages:
-                    state.event_queue.put(msg.get_message())
+                    state.event_queue.put(msg)
 
                 # Publish remove and modify messages via the public market data feed
                 remove_and_modify_messages = transactions.get_remove_and_modify_messages()

@@ -171,12 +171,12 @@ def public_market_data_feed(config, state):
                     # TODO: all events should be normalized into same data type
                     if not isinstance(event, dict):
                         message = event.get_message()
-                        message = json.dumps(message)
                         messaging.send_data(client.socket, message, client.encoding)
                     else:
                         message = json.dumps(event)
                         messaging.send_data(client.socket, message, client.encoding)
-
+                else:
+                    print(" ")
             if state.config.display == "BOOK":
                 state.get_current_lob_state().print()
             elif state.config.display == "MESSAGES":
