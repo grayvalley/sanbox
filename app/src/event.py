@@ -122,6 +122,10 @@ class Add(Event):
     def get_message(self):
         """
         Transforms the event object into SDM format.
+
+        Note: Snapshot is always 0 since these messages
+        are obtained from event generators who enter new orders
+        into the LOB.
         """
         message = {}
         message.update({'message-type': 'A'})
@@ -131,6 +135,7 @@ class Add(Event):
         message.update({'price': int(self.price)})
         message.update({'side': side_to_str(self.side)})
         message.update({'timestamp': self.str_timestamp})
+        message.update({'snapshot': 0})
 
         return message
 

@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import time
+import json
 from decimal import Decimal
 from .side import (
     Side,
@@ -16,6 +17,7 @@ from src.transaction import (
     TransactionList
 )
 
+import src.messaging as messaging
 
 class EventGenerator:
 
@@ -162,7 +164,6 @@ class EventGenerator:
         'price': 97}
         """
         event = Add()
-        event.order_id = state.get_next_valid_trade_id()
         event.price = self._infer_price_level(state)
         event.quantity = self._generate_random_limit_order_quantity(state)
         event.side = self.side
@@ -235,6 +236,23 @@ class EventGenerator:
         return s
 
 
+def _create_add_message_from_add_event(order):
+    """
+    Creates add message from an order
+    :param order:
+    :return:
+    """
+    message = {}
+    message.update({"message-type": "A"})
+    message.update({"order-id": order["order_id"]})
+    message.update({"price": int(order["price"])})
+    message.update({"quantity": int(order["quantity"])})
+    message.update({"side": side_to_str(order["side"])})
+    message.update({"timestamp": order["timestamp"]})
+    message.update({"snapshot": 0})
+    return message
+
+
 def event_generation_loop(state, generator):
     """
     Runs order book simulation for one event type.
@@ -257,8 +275,8 @@ def event_generation_loop(state, generator):
             lob = state.get_current_lob_state()
 
             if event.event_type in [EventTypes.ADD]:
-                _, _, _ = lob.process_order(event.to_lob_format(), False, False)
-                state.event_queue.put(event.get_message())
+                _, order_in_book, _ = lob.process_order(event.to_lob_format(), False, False)
+                state.event_queue.put(_create_add_message_from_add_event(order_in_book))
 
             elif event.event_type in [EventTypes.CANCEL]:
                 if event.order_id is not None:
@@ -268,13 +286,26 @@ def event_generation_loop(state, generator):
             elif event.event_type in [EventTypes.MARKET_ORDER]:
 
                 transactions, _, _ = lob.process_order(event.to_lob_format(), False, False)
-                trade_messages = transactions.get_trade_messages()
 
-                # Send trades via public market data feed
-                for msg in trade_messages:
+                # Generate trade messages
+                aggressor_messages, passive_messages = transactions.get_trade_messages()
+
+                # Send order executed message(s) to the passive side of the transaction.
+                # If passive_trader_id is None the order was simulated.
+                for passive_trader_id, msg in passive_messages:
+                    if passive_trader_id is not None:
+                        passive_side_client = state.get_order_client_nts(passive_trader_id)
+                        if passive_side_client is not None:
+                            messaging.send_data(
+                                passive_side_client.socket,
+                                json.dumps(msg),
+                                passive_side_client.encoding)
+
+                # Publish trade(s) via the public market data feed
+                for msg in aggressor_messages:
                     state.event_queue.put(msg)
 
-                # Send remove and modify messages via public market data feed
+                # Publish remove and modify messages via the public market data feed
                 remove_and_modify_messages = transactions.get_remove_and_modify_messages()
                 for msg in remove_and_modify_messages:
                     state.event_queue.put(msg)

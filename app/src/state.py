@@ -12,8 +12,9 @@ class GlobalState:
         self._event_queue = Queue()
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
-        self._next_trade_id = 1
-        self._order_clients = []
+
+        self._order_clients = {}
+
         self._market_data_clients = []
 
         self._simulation_threads = []
@@ -62,33 +63,35 @@ class GlobalState:
     def get_threads(self):
         return self._threads
 
-    def add_order_client(self, client):
+    def add_order_client(self, trader_id, client):
 
-        with self._lock:
-            self._order_clients.append(client)
+        self._lock.acquire()
+        self._order_clients.update({trader_id: client})
+        self._lock.release()
 
-    def remove_order_client(self, client):
+    def remove_order_client(self, trader_id):
 
-        with self._lock:
-            self._order_clients.remove(client)
+        self._lock.acquire()
+        del self._order_clients[trader_id]
+        self._lock.release()
+
+    def get_order_client_nts(self, trader_id):
+        if trader_id in self._order_clients:
+            client = self._order_clients[trader_id]
+            return client
+        else:
+            print(f"TraderId: {trader_id} not found from OrderClients!")
+            return None
 
     def add_market_data_client(self, client):
 
-        with self._lock:
+        #with self._lock:
             self._market_data_clients.append(client)
 
     def remove_market_data_client(self, client):
 
         with self._lock:
             self._market_data_clients.remove(client)
-
-    def get_next_valid_trade_id(self):
-        """
-        Returns next valid trade id
-        """
-        trade_id = self._next_trade_id
-        self._next_trade_id += 1
-        return trade_id
 
     def get_current_lob_state(self):
         """

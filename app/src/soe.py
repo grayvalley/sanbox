@@ -9,7 +9,7 @@ from .side import (
 )
 
 _MESSAGE_TYPE_CONFIG = 'C'
-_MESSAGE_TYPE_NEW_ORDER = 'E'
+_MESSAGE_TYPE_NEW_ORDER = 'A'
 _MESSAGE_TYPE_CANCEL_ORDER = 'X'
 _MESSAGE_TYPE_ORDER_ACCEPTED = 'A'
 _MESSAGE_TYPE_ORDER_REJECTED = 'R'
@@ -166,6 +166,10 @@ class InboundNewOrder:
     def get_message(self):
         """
         Transforms the event object into SDM format.
+
+        Note: Snapshot is always 0 since these messages
+        are obtained from clients who enter new orders
+        into the LOB.
         """
         message = {}
         message.update({'message-type': 'A'})
@@ -175,6 +179,7 @@ class InboundNewOrder:
         message.update({'price': int(self.price)})
         message.update({'side': side_to_str(self.side)})
         message.update({'timestamp': str(self.timestamp)})
+        message.update({'snapshot': 0})
 
         return message
 

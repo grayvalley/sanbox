@@ -13,7 +13,8 @@ from .ordertree import (
 )
 
 from .side import (
-    Side
+    Side,
+    get_opposite_side
 )
 
 from .transaction import (
@@ -24,14 +25,11 @@ from .transaction import (
     SelfMatchCancel
 )
 
+epoch = datetime.utcfromtimestamp(0)
 
-def get_opposite_side(side):
-    if side == Side.B:
-        return Side.S
-    elif side == Side.S:
-        return Side.B
-    else:
-        raise ValueError('Side has to be either Side.B or Side.S.')
+
+def unix_time_millis(dt):
+    return int((dt - epoch).total_seconds() * 1000000.0)
 
 
 class OrderBook(object):
@@ -47,7 +45,7 @@ class OrderBook(object):
         self.next_order_id = 0
 
     def update_time(self):
-        self.time = datetime.now()
+        self.time = unix_time_millis(datetime.now())
 
     def increment_next_order_id(self):
         self.next_order_id += 1
@@ -140,11 +138,11 @@ class OrderBook(object):
             head_order = order_list.get_head_order()
 
             # Self match prevention check
-            trader_id = quote.get('trader_id', None)
-            if trader_id is None:
+            aggressor_trader_id = quote.get('trader_id', None)
+            if aggressor_trader_id is None:
                 self_match = False
             else:
-                self_match = head_order.trader_id == trader_id
+                self_match = head_order.trader_id == aggressor_trader_id
 
             if self_match:
                 # Cancel resting order from this price level and continue
@@ -154,6 +152,7 @@ class OrderBook(object):
                 else:
                     self.bids.remove_order_by_id(head_order.order_id)
 
+                # TODO: Create function for this
                 cancel = SelfMatchCancel()
                 cancel.order_id = head_order.order_id
                 cancel.side = head_order.side
@@ -162,11 +161,12 @@ class OrderBook(object):
                 cancel.trader_id = head_order.trader_id
                 cancel.timestamp = self.time
                 smp_cancels.append(cancel)
-                print(" ")
+
             else:
 
                 traded_price = head_order.price
                 counter_party = head_order.order_id
+                passive_trader_id = head_order.trader_id
                 new_book_quantity = None
 
                 # Head order is NOT fully consumed
@@ -195,6 +195,7 @@ class OrderBook(object):
                         self.bids.remove_order_by_id(head_order.order_id)
                     quantity_to_trade -= traded_quantity
 
+                # TODO: Create function for this
                 """
                 Aggressing party:
                 
@@ -205,6 +206,9 @@ class OrderBook(object):
                 aggressor.id = quote['order_id']
                 aggressor.side = side
                 aggressor.order_type = quote['order_type']
+                aggressor.trader_id = aggressor_trader_id
+
+                # TODO: Create function for this
                 """
                 Passive party:
                 """
@@ -213,7 +217,9 @@ class OrderBook(object):
                 passive.order_id = head_order.order_id
                 passive.quantity_remaining = new_book_quantity
                 passive.side = get_opposite_side(side)
+                passive.trader_id = passive_trader_id
 
+                # TODO: Create function for this
                 transaction = Transaction()
                 transaction.aggressor = aggressor
                 transaction.passive = passive
@@ -237,7 +243,7 @@ class OrderBook(object):
         if side == Side.B:
             while quantity_to_trade > 0 and self.asks:
                 best_price_asks = self.asks.min_price_list()
-                quantity_to_trade, new_trades, smp_cancels  = self.process_order_list(
+                quantity_to_trade, new_trades, smp_cancels = self.process_order_list(
                     Side.B, best_price_asks, quantity_to_trade, quote, verbose)
                 if new_trades is not None:
                     trades.add_transactions(new_trades)
