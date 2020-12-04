@@ -38,9 +38,9 @@ def recv_data(client, length):
 
 	try:
 		messages = parse_messages_to_json(data.decode('utf-8'))
-		print(f"Received {len(messages)} messages from client {client}.")
-		for msg in messages:
-			print("Message received:", msg)
+		# print(f"Received {len(messages)} messages from client {client}.")
+		# for msg in messages:
+		# 	print("Message received:", msg)
 		return messages
 	except Exception as e:
 		print(e)

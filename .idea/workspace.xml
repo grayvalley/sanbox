@@ -31,10 +31,8 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/etc/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/etc/config.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/event_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/event_generator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/events/ILimitOrderGenerator.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/events/ILimitOrderGenerator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/market_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/market_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/messaging.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/messaging.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/order_entry.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/order_entry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/simulation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -143,23 +141,18 @@
           <option name="timeStamp" value="43" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>115</line>
-          <option name="timeStamp" value="72" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/messaging.py</url>
           <line>34</line>
           <option name="timeStamp" value="73" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/messaging.py</url>
-          <line>44</line>
+          <line>45</line>
           <option name="timeStamp" value="74" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/messaging.py</url>
-          <line>56</line>
+          <line>57</line>
           <option name="timeStamp" value="75" />
         </line-breakpoint>
       </breakpoints>

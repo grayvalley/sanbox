@@ -105,11 +105,11 @@ class EventGenerator:
 
         if self.side == Side.B:  # buy market order
 
-            quantity = max(self._rng.geometric(0.05, 1)[0].item(), 1)
+            quantity = max(self._rng.geometric(0.04, 1)[0].item(), 1)
 
         elif self.side == Side.S:  # sell market order
 
-            quantity = max(self._rng.geometric(0.05, 1)[0].item(), 1)
+            quantity = max(self._rng.geometric(0.04, 1)[0].item(), 1)
 
         return Decimal(quantity)
 
