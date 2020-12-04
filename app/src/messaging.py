@@ -99,8 +99,8 @@ def send_data(client, data, encoding):
 		msg = encode_char(data)
 
 	if msg is not None:
-		print(msg)
 		return client.send(msg)
+
 
 def encode_char(string):
 	"""

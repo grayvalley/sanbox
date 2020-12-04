@@ -168,6 +168,7 @@ def public_market_data_feed(config, state):
 
             for client in state.get_market_data_clients():
                 if client.handshaken and client.snapshot_sent:
+                    # TODO: all events should be normalized into same data type
                     if not isinstance(event, dict):
                         message = event.get_message()
                         message = json.dumps(message)

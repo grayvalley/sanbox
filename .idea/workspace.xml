@@ -28,12 +28,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="348c4bc0-bfa1-4f77-8a29-ac91a7a8e14e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/app/src/events/BaseLimitOrderGenerator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/events/IEventGenerator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/events/LimitOrderAddGenerator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/events/LimitOrderCancelGenerator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/events/MarketOrderGenerator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/events/Side.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/connection.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/connection.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/etc/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/etc/config.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/event_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/event_generator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/market_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/market_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/messaging.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/messaging.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/order_entry.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/order_entry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/soe.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/soe.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,6 +50,13 @@
   </component>
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -55,8 +70,16 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cf.first.check.clang-format" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/app/src/common" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/common" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/simulation" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
@@ -125,6 +148,16 @@
           <url>file://$PROJECT_DIR$/app/src/orderbook.py</url>
           <line>69</line>
           <option name="timeStamp" value="43" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
+          <line>200</line>
+          <option name="timeStamp" value="57" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
+          <line>201</line>
+          <option name="timeStamp" value="59" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

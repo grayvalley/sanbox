@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import time
+from abc import ABCMeta, abstractmethod
 import json
 from decimal import Decimal
 from .side import (
@@ -18,6 +19,7 @@ from src.transaction import (
 )
 
 import src.messaging as messaging
+
 
 class EventGenerator:
 
@@ -255,7 +257,7 @@ def _create_add_message_from_add_event(order):
 
 def event_generation_loop(state, generator):
     """
-    Runs order book simulation for one event type.
+    Runs order book events for one event type.
     """
     if not isinstance(generator, EventGenerator):
         raise TypeError("Thread function now takes parameter class.")
@@ -303,7 +305,7 @@ def event_generation_loop(state, generator):
 
                 # Publish trade(s) via the public market data feed
                 for msg in aggressor_messages:
-                    state.event_queue.put(msg)
+                    state.event_queue.put(msg.get_message())
 
                 # Publish remove and modify messages via the public market data feed
                 remove_and_modify_messages = transactions.get_remove_and_modify_messages()
