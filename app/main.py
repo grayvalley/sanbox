@@ -31,7 +31,6 @@ format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=format, level=logging.INFO,
                     datefmt="%H:%M:%S")
 
-
 def main():
 
     config = ConfigReader("src/etc/config.ini")
@@ -58,8 +57,13 @@ def main():
         args=(config, state,))
     market_data_thread.start()
 
+    # TODO: put this into config
+    # Add two books
+    state.add_order_book(0)
+    state.add_order_book(1)
+
     if config.simulate or config.initialize:
-        # Initialize order book
+        # Initialize order books
         limit_orders = []
         for price in range(config.initial_best_ask, config.initial_best_ask + config.initial_book_levels):
             for i in range(0, config.initial_orders):
@@ -78,9 +82,11 @@ def main():
                 limit_orders.append(order)
 
         # Add orders to order book
-        lob = state.get_current_lob_state()
-        for order in limit_orders:
-            trades = lob.process_order(order, False, False)
+        #lob = state.get_current_lob_state()
+        order_books = state.get_order_books()
+        for order_book in order_books:
+            for order in limit_orders:
+                trades = order_book.process_order(order, False, False)
 
     # Start producing market data events
     if config.simulate:
