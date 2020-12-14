@@ -1,7 +1,24 @@
 import json
 import struct
 import errno
+import re
 from socket import error as SocketError
+
+
+def parse_messages_to_json(str):
+
+	r = re.split('(\{.*?\})(?= *\{)', str)
+	accumulator = ''
+	res = []
+	for subs in r:
+		accumulator += subs
+		try:
+			res.append(json.loads(accumulator))
+			accumulator = ''
+		except:
+			pass
+
+	return res
 
 
 def recv_data(client, length):
@@ -15,14 +32,18 @@ def recv_data(client, length):
 	try:
 		data = client.recv(length)
 	except SocketError as e:
+		print(e)
 		if e.errno == errno.ECONNRESET:
 			return None
 
 	try:
-		message = json.loads(data.decode('utf-8'))
-		print("Message received:", message)
-		return message
+		messages = parse_messages_to_json(data.decode('utf-8'))
+		# print(f"Received {len(messages)} messages from client {client}.")
+		# for msg in messages:
+		# 	print("Message received:", msg)
+		return messages
 	except Exception as e:
+		print(e)
 		pass
 
 	try:
@@ -34,6 +55,7 @@ def recv_data(client, length):
 		print("Message received:", message)
 		return message
 	except Exception as e:
+		print(e)
 		pass
 
 	return None
@@ -97,7 +119,10 @@ def send_data(client, data, encoding):
 		msg = data.econde('utf-8')
 	else:
 		msg = encode_char(data)
-	return client.send(msg)
+
+	if msg is not None:
+		# TODO: add error handling
+		return client.send(msg)
 
 
 def encode_char(string):

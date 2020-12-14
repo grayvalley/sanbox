@@ -81,6 +81,8 @@ def _send_order_book_snapshot(state, client):
     state.lock.acquire()
     messages = []
     lob = state.get_current_lob_state()
+
+    # Send sell orders
     if (lob.asks is not None) and (len(lob.asks) > 0):
         for price, order_list in reversed(lob.asks.price_map.items()):
             head_order = order_list.get_head_order()
@@ -88,6 +90,7 @@ def _send_order_book_snapshot(state, client):
                 messages.append(_create_add_message_from_order(head_order))
                 head_order = head_order.next_order
 
+    # Send buy orders
     if (lob.bids is not None) and (len(lob.bids) > 0):
         for price, order_list in reversed(lob.bids.price_map.items()):
             head_order = order_list.get_head_order()
@@ -98,6 +101,8 @@ def _send_order_book_snapshot(state, client):
     for message in messages:
         message = json.dumps(message)
         messaging.send_data(client.socket, message, client.encoding)
+
+    client.snapshot_sent = True
 
     state.lock.release()
 
@@ -155,29 +160,27 @@ def public_market_data_feed(config, state):
     # Sleep until the next market event
     while not state.stopper.is_set():
 
+        state.lock.acquire()
         while not state.event_queue.empty():
 
             # Get next event
             event = state.event_queue.get()
 
-            if isinstance(event, list):
-                print(" ")
-
-            state.lock.acquire()
             for client in state.get_market_data_clients():
-                if client.handshaken:
+                if client.handshaken and client.snapshot_sent:
+                    # TODO: all events should be normalized into same data type
                     if not isinstance(event, dict):
                         message = event.get_message()
-                        message = json.dumps(message)
                         messaging.send_data(client.socket, message, client.encoding)
                     else:
                         message = json.dumps(event)
                         messaging.send_data(client.socket, message, client.encoding)
-
+                else:
+                    print(" ")
             if state.config.display == "BOOK":
                 state.get_current_lob_state().print()
             elif state.config.display == "MESSAGES":
                 print(event)
-            state.lock.release()
+        state.lock.release()
 
     print('Market data dispatching stopped.')

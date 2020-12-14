@@ -77,7 +77,6 @@ def handle_order_entry_requests(state, client):
     handshake.handshake(client.socket)
     client.handshaken = True
 
-    # TODO: Read at start up
     with open('src/etc/schema-enter-order.json', 'r') as f:
         schema_enter_order = f.read()
     with open('src/etc/schema-cancel-order.json', 'r') as f:
@@ -88,19 +87,31 @@ def handle_order_entry_requests(state, client):
     # Start listening to the client order entry requests
     while not state.stopper.is_set():
 
-        request = messaging.recv_data(client.socket, 4096)
-        if not request:
-            break
+        try:
 
-        for schema in [schema_enter_order, schema_cancel_order]:
-            try:
-                jsonschema.validate(request, schema)
-            except jsonschema.exceptions.ValidationError as e:
-                pass
-            else:
-                message = MessageFactory.create(request, client.uuid)
-                handler = order_entry_message_handlers[message.message_type]
-                handler(state, client, message)
+            # Get all requests from the socket
+            requests = messaging.recv_data(client.socket, 4096)
+            if not requests:
+                break
+
+            if len(requests) > 1:
+                print("")
+
+            # Handle each request
+            for request in requests:
+
+                for schema in [schema_enter_order, schema_cancel_order]:
+                    try:
+                        jsonschema.validate(request, schema)
+                    except jsonschema.exceptions.ValidationError as e:
+                        pass
+                    else:
+                        message = MessageFactory.create(request, client.uuid)
+                        handler = order_entry_message_handlers[message.message_type]
+                        handler(state, client, message)
+
+        except Exception as e:
+            print(e)
 
     print(f'Order entry thread closed for client {client}.')
 
@@ -120,22 +131,36 @@ def _handle_order_entry_cancel_order(state, client, order):
     # Check if this client is the owner of the requested order id
     is_owner = order.order_id in client.orders
 
-    # Look up order from the book
     if is_owner is False:
-        rejected_message = _create_order_rejected_message(order, 'Not your order.')
+        rejected_message = _create_order_rejected_message(order, 'O')
         messaging.send_data(client.socket, rejected_message, client.encoding)
         return
+
+    # Try to get order from the book
     order_in_book = lob.get_order(order.order_id)
+
     # If order is not found, reject cancellation
     if order_in_book is None:
-        rejected_message = _create_order_rejected_message(order, 'OrderId not found.')
+
+        # Mark order as canceled
+        client.order_set_as_canceled(order)
+
+        # Send rejected message to the client
+        rejected_message = _create_order_rejected_message(order, 'N')
         messaging.send_data(client.socket, rejected_message, client.encoding)
-    # Order was found
+
+    # Order was found - cancel the order
     else:
+
+        # Mark order as canceled
+        client.order_set_as_canceled(order)
+
+        # Send rejected message to the client
         cancel_message = _create_order_canceled_message(order_in_book, 'Client request.')
         messaging.send_data(client.socket, cancel_message, client.encoding)
+
         lob.cancel_order(order_in_book.side, order.order_id)
-    lob.print()
+
     state.lock.release()
 
 
@@ -170,15 +195,25 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
         transactions, order_in_book, smp_cancels = lob.process_order(
             order.to_lob_format(), False, False)
 
-        # Send Self-Match-Prevention cancels, if any
-        if smp_cancels != []:
+        # TODO: Wrap into a function
+        # Handle messages related to Self-Match-Prevention
+        if smp_cancels:
             for cancel in smp_cancels:
+
+                # Send OrderCanceled message to the client
+                # TODO: make cancel code for SMP
                 cancel_message = _create_order_canceled_message(
-                            cancel, 'Order canceled due to automatic Self-Match-Prevention.')
+                    cancel,
+                    'Order canceled due to automatic Self-Match-Prevention.'
+                )
                 messaging.send_data(client.socket, cancel_message, client.encoding)
 
-        # Send order accepted message
-        # TODO: make this prettier
+                # Send remove messages trough public market data feed
+                remove_message = _create_remove_message_from_smp_cancel(cancel)
+                state.event_queue.put(remove_message)
+
+        # TODO: Wrap into a function
+        # Order Accepted messages
         order.order_id = order_in_book['order_id']
         order.timestamp = order_in_book['timestamp']
         accept_message = _create_order_accepted_message(order)
@@ -204,7 +239,7 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
                             json.dumps(msg),
                             passive_side_client.encoding)
 
-            # Send order executed message(s) to client
+            # Send order executed message(s) to the aggressing side of the transaction (client)
             for msg in aggressor_messages:
                 messaging.send_data(client.socket, json.dumps(msg), client.encoding)
 
@@ -217,6 +252,11 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
             for msg in remove_and_modify_messages:
                 state.event_queue.put(msg)
 
+            # Publish potential add message via the public market data feed
+            if order_in_book['quantity'] > 0:
+                stub_add_message = _create_order_stub_add_message(order_in_book)
+                state.event_queue.put(stub_add_message)
+
         # If the new order was just placed in the book
         else:
 
@@ -228,7 +268,8 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
             order.order_id = order_in_book['order_id']
             order.timestamp = order_in_book['timestamp']
             state.event_queue.put(order)
-    lob.print()
+
+    #lob.print()
     state.lock.release()
 
 
@@ -271,6 +312,7 @@ def _create_order_accepted_message(order):
     Creates an order accepted message from order
     """
     msg = {'message-type': 'Y',
+           'instrument': order.instrument,
            'order-type': order.order_type,
            'side': side_to_str(order.side),
            'quantity': int(order.quantity),
@@ -279,6 +321,42 @@ def _create_order_accepted_message(order):
            'timestamp': str(order.timestamp)
            }
     return json.dumps(msg)
+
+
+def _create_remove_message_from_smp_cancel(cancel):
+    """
+    Creates an order removed message from a Self-Match-Prevention (SMP)
+    cancel.
+    :param order: order that was cancelled due to SMP
+    :return: the cancel message
+    """
+    msg = {'message-type': 'X',
+           'order-id': cancel.order_id,
+           'order-type': 'LMT',
+           'side': side_to_str(cancel.side),
+           'price': int(cancel.price),
+           'timestamp': cancel.timestamp
+           }
+
+    return msg
+
+
+def _create_order_stub_add_message(order):
+    """
+
+    :param order:
+    :return:
+    """
+    msg = {'message-type': 'A',
+           'order-id': order['order_id'],
+           'order-type': 'LMT',
+           'quantity': int(order['quantity']),
+           'price': int(order['price']),
+           'side': side_to_str(order['side']),
+           'timestamp': order['timestamp'],
+           'snapshot': 0
+           }
+    return msg
 
 
 order_entry_message_handlers = {

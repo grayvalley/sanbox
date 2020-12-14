@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import time
+from abc import ABCMeta, abstractmethod
 import json
 from decimal import Decimal
 from .side import (
@@ -18,6 +19,7 @@ from src.transaction import (
 )
 
 import src.messaging as messaging
+
 
 class EventGenerator:
 
@@ -103,11 +105,11 @@ class EventGenerator:
 
         if self.side == Side.B:  # buy market order
 
-            quantity = max(self._rng.geometric(0.05, 1)[0].item(), 1)
+            quantity = max(self._rng.geometric(0.04, 1)[0].item(), 1)
 
         elif self.side == Side.S:  # sell market order
 
-            quantity = max(self._rng.geometric(0.05, 1)[0].item(), 1)
+            quantity = max(self._rng.geometric(0.04, 1)[0].item(), 1)
 
         return Decimal(quantity)
 
@@ -255,7 +257,7 @@ def _create_add_message_from_add_event(order):
 
 def event_generation_loop(state, generator):
     """
-    Runs order book simulation for one event type.
+    Runs order book events for one event type.
     """
     if not isinstance(generator, EventGenerator):
         raise TypeError("Thread function now takes parameter class.")

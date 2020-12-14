@@ -73,6 +73,7 @@ class InboundConfigMessage:
 class InboundNewOrder:
     def __init__(self):
         self._message_type = None
+        self._instrument = None
         self._order_type = None
         self._side = None
         self._quantity = None
@@ -88,6 +89,15 @@ class InboundNewOrder:
     def message_type(self, value):
         flag_wrong_instance_type(value, str, 'message_type')
         self._message_type = value
+
+    @property
+    def instrument(self):
+        return self._instrument
+
+    @instrument.setter
+    def instrument(self, value):
+        flag_wrong_instance_type(value, int, 'instrument')
+        self._instrument = value
 
     @property
     def order_type(self):
@@ -171,17 +181,18 @@ class InboundNewOrder:
         are obtained from clients who enter new orders
         into the LOB.
         """
-        message = {}
-        message.update({'message-type': 'A'})
-        message.update({'order-id': self.order_id})
-        message.update({'order-type': 'LMT'})
-        message.update({'quantity': int(self.quantity)})
-        message.update({'price': int(self.price)})
-        message.update({'side': side_to_str(self.side)})
-        message.update({'timestamp': str(self.timestamp)})
-        message.update({'snapshot': 0})
+        msg = {}
+        msg.update({'message-type': 'A'})
+        msg.update({'instrument': self.instrument})
+        msg.update({'order-id': self.order_id})
+        msg.update({'order-type': 'LMT'})
+        msg.update({'quantity': int(self.quantity)})
+        msg.update({'price': int(self.price)})
+        msg.update({'side': side_to_str(self.side)})
+        msg.update({'timestamp': str(self.timestamp)})
+        msg.update({'snapshot': 0})
 
-        return message
+        return json.dumps(msg)
 
 
 class InboundCancelOrder:

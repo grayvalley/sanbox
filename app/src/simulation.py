@@ -20,28 +20,28 @@ def run_market_data_simulation(config, state):
     n_levels = 15
     thread_id = 1
     for level in range(1, n_levels + 1):
-        generator = EventGenerator(thread_id, EventTypes.ADD, Side.B, level, 1.50 * np.exp(-0.08*(level - 1)), 1)
+        generator = EventGenerator(thread_id, EventTypes.ADD, Side.B, level, 1.10 * np.exp(-0.08*(level - 1)), 1)
         kwargs = {'state': state, 'generator': generator}
         state.add_simulation_thread(threading.Thread(target=event_generation_loop, kwargs=kwargs))
         thread_id += 1
 
     # Create sell limit order add sampling threads
     for level in range(1, n_levels + 1):
-        generator = EventGenerator(thread_id, EventTypes.ADD, Side.S, level, 1.50 * np.exp(-0.08*(level - 1)), 1)
+        generator = EventGenerator(thread_id, EventTypes.ADD, Side.S, level, 1.10 * np.exp(-0.08*(level - 1)), 1)
         kwargs = {'state': state, 'generator': generator}
         state.add_simulation_thread(threading.Thread(target=event_generation_loop, kwargs=kwargs))
         thread_id += 1
 
     # Create buy limit order cancel sampling threads
     for level in range(1, n_levels + 1):
-        generator = EventGenerator(thread_id, EventTypes.CANCEL, Side.B, level, 1.0 * np.exp(-0.25*(level - 1)), 1)
+        generator = EventGenerator(thread_id, EventTypes.CANCEL, Side.B, level, 1.0 * np.exp(-0.10*(level - 1)), 1)
         kwargs = {'state': state, 'generator': generator}
         state.add_simulation_thread(threading.Thread(target=event_generation_loop, kwargs=kwargs))
         thread_id += 1
 
     # Create sell limit order cancel sampling threads
     for level in range(1, n_levels + 1):
-        generator = EventGenerator(thread_id, EventTypes.CANCEL, Side.S, level, 1.0 * np.exp(-0.25*(level - 1)), 1)
+        generator = EventGenerator(thread_id, EventTypes.CANCEL, Side.S, level, 1.0 * np.exp(-0.10*(level - 1)), 1)
         kwargs = {'state': state, 'generator': generator}
         state.add_simulation_thread(threading.Thread(target=event_generation_loop, kwargs=kwargs))
         thread_id += 1

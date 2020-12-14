@@ -9,8 +9,15 @@ class ClientConnection:
         self._port = None
         self._encoding = 1
         self._handshaken = False
-        self._orders = {}
+        self._snapshot_sent = False
+
         self._uuid = id_
+
+        # Current active orders
+        self._orders = {}
+
+        # Canceled orders
+        self._canceled_orders = {}
 
     @property
     def uuid(self):
@@ -69,6 +76,22 @@ class ClientConnection:
         if not isinstance(value, int):
             raise TypeError(f'Handshaken has to be type of <bool>, was {type(value)}')
         self._handshaken = value
+
+    @property
+    def snapshot_sent(self):
+        return self._snapshot_sent
+
+    @snapshot_sent.setter
+    def snapshot_sent(self, value):
+        if not isinstance(value, int):
+            raise TypeError(f'Snapshot_sent has to be type of <bool>, was {type(value)}')
+        self._snapshot_sent = value
+
+    def order_set_as_canceled(self, order):
+        if order.order_id in self._orders:
+            del self._orders[order.order_id]
+
+        self._canceled_orders.update({order.order_id: order})
 
     def __str__(self):
         return f'{self.host}:{self.port}'
