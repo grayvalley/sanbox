@@ -30,10 +30,6 @@
 						"S",
 						"B"
 					]
-				},
-				"order_id": {
-					"type": "integer",
-					"exclusiveMinimum": 0
 				}
 			},
 			"additionalProperties": false,
@@ -65,6 +61,7 @@
 			},
 			"additionalProperties": false,
 			"required": [
+				"instrument",
 				"message-type",
 				"order-type",
 				"quantity",

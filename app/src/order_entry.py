@@ -312,6 +312,7 @@ def _create_order_accepted_message(order):
     Creates an order accepted message from order
     """
     msg = {'message-type': 'Y',
+           'instrument': order.instrument,
            'order-type': order.order_type,
            'side': side_to_str(order.side),
            'quantity': int(order.quantity),

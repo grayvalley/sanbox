@@ -73,6 +73,7 @@ class InboundConfigMessage:
 class InboundNewOrder:
     def __init__(self):
         self._message_type = None
+        self._instrument = None
         self._order_type = None
         self._side = None
         self._quantity = None
@@ -88,6 +89,15 @@ class InboundNewOrder:
     def message_type(self, value):
         flag_wrong_instance_type(value, str, 'message_type')
         self._message_type = value
+
+    @property
+    def instrument(self):
+        return self._instrument
+
+    @instrument.setter
+    def instrument(self, value):
+        flag_wrong_instance_type(value, int, 'instrument')
+        self._instrument = value
 
     @property
     def order_type(self):
@@ -173,6 +183,7 @@ class InboundNewOrder:
         """
         msg = {}
         msg.update({'message-type': 'A'})
+        msg.update({'instrument': self.instrument})
         msg.update({'order-id': self.order_id})
         msg.update({'order-type': 'LMT'})
         msg.update({'quantity': int(self.quantity)})
