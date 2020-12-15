@@ -30,6 +30,41 @@ def unix_time_millis(dt):
     return int((dt - epoch).total_seconds() * 1000000.0)
 
 
+class OrderRequestHandler:
+
+    def __init__(self, global_state, client):
+        self._global_state = global_state
+        self._client = client
+
+        self._handlers = {}
+
+    def handle_request(self, request):
+        """
+        Handle new order request.
+
+        :param request: received request
+        """
+        handler = self._handlers.get(request.message_type, None)
+        if handler is not None:
+            handler(request)
+
+    def cancel_order(self, request):
+        """
+        Handles cancel order requests
+
+        :param request: received request
+        """
+        pass
+
+    def add_or_modify_order(self, request):
+        """
+        Handles add or modify order requests
+
+        :param request: received request
+        """
+        pass
+
+
 def accept_new_order_entry_clients(config, state):
 
     print(f"Order entry gateway listening {config.order_entry_address}:{config.order_entry_port}.")
@@ -40,7 +75,6 @@ def accept_new_order_entry_clients(config, state):
     s.listen(5)
     while not state.stopper.is_set():
         try:
-
             # Accept incoming connection request
             conn, addr = s.accept()
             print('Order entry connection from:', addr)
@@ -97,17 +131,13 @@ def handle_order_entry_requests(state, client):
 
     # Start listening to the client order entry requests
     while not state.stopper.is_set():
-
         try:
-
             # Get all requests from the socket
             requests = messaging.recv_data(client.socket, 4096)
             if not requests:
                 break
-
             # Handle each request
             for request in requests:
-
                 for schema in [schema_enter_order, schema_cancel_order]:
                     try:
                         jsonschema.validate(request, schema)
@@ -138,21 +168,22 @@ def _handle_order_entry_cancel_order(state, client, order):
 
     # Check if this client is the owner of the requested order id
     is_owner = order.order_id in client.orders
-
     if is_owner is False:
-        rejected_message = _create_order_rejected_message(order, 'O')
-        messaging.send_data(client.socket, rejected_message, client.encoding)
+        state.lock.release()
         return
+        # rejected_message = _create_order_rejected_message(order, 'O')
+        # messaging.send_data(client.socket, rejected_message, client.encoding)
 
     # Try to get order from the book
     order_in_book = lob.get_order(order.order_id)
 
     # If order is not found, reject cancellation
     if order_in_book is None:
-
+        state.lock.release()
+        return
         # Send rejected message to the client
-        rejected_message = _create_order_rejected_message(order, 'N')
-        messaging.send_data(client.socket, rejected_message, client.encoding)
+        # rejected_message = _create_order_rejected_message(order, 'N')
+        # messaging.send_data(client.socket, rejected_message, client.encoding)
 
     # Order was found - cancel the order
     else:
