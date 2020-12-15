@@ -117,9 +117,6 @@ def handle_market_data_subscription(state, client):
     handshake.handshake(client.socket)
     client.handshaken = True
 
-    # Send current snapshot of the order book
-    #
-
     # Start listening to the client market data requests
     while not state.stopper.is_set():
 
@@ -167,6 +164,7 @@ def _handle_unsubscribe_request(state, client, request):
     """
     Removes existing market data subscriptions
     """
+    # TODO: create me
 
 
 market_data_message_handlers = {
@@ -189,6 +187,9 @@ def public_market_data_feed(config, state):
             # Get next event
             event = state.event_queue.get()
 
+            # TODO: get event market data type
+            # TODO: get clients who subscribed to this data
+
             for client in state.get_market_data_clients():
                 if client.handshaken and client.snapshot_sent:
                     # TODO: all events should be normalized into same data type
@@ -201,7 +202,7 @@ def public_market_data_feed(config, state):
                 else:
                     print(" ")
             if state.config.display == "BOOK":
-                state.get_current_lob_state().print()
+                state.get_current_lob_state(event.instrument).print()
             elif state.config.display == "MESSAGES":
                 print(event)
         state.lock.release()
