@@ -231,6 +231,7 @@ class OrderBook(object):
                 transaction.timestamp = self.time
                 transaction.traded_price = traded_price
                 transaction.traded_quantity = traded_quantity
+                transaction.instrument = head_order.instrument
 
                 trades.append(transaction)
 

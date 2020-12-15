@@ -171,8 +171,6 @@ def _handle_order_entry_cancel_order(state, client, order):
     if is_owner is False:
         state.lock.release()
         return
-        # rejected_message = _create_order_rejected_message(order, 'O')
-        # messaging.send_data(client.socket, rejected_message, client.encoding)
 
     # Try to get order from the book
     order_in_book = lob.get_order(order.order_id)
@@ -181,9 +179,6 @@ def _handle_order_entry_cancel_order(state, client, order):
     if order_in_book is None:
         state.lock.release()
         return
-        # Send rejected message to the client
-        # rejected_message = _create_order_rejected_message(order, 'N')
-        # messaging.send_data(client.socket, rejected_message, client.encoding)
 
     # Order was found - cancel the order
     else:

@@ -127,6 +127,17 @@ class Transaction:
         self._timestamp = None
         self._traded_price = None
         self._traded_quantity = None
+        self._instrument = None
+
+    @property
+    def instrument(self):
+        return self._instrument
+
+    @instrument.setter
+    def instrument(self, value):
+        if not isinstance(value, int):
+            raise TypeError(f'Instrument has to be <int>, was {int}.')
+        self._instrument = value
 
     @property
     def aggressor(self):
@@ -230,6 +241,7 @@ class TransactionList:
             message.update({'price': int(transaction.traded_price)})
             message.update({'order-id': transaction.aggressor.id})
             message.update({'quantity': transaction.traded_quantity})
+            message.update({'instrument': transaction.instrument})
             if transaction.aggressor.side == Side.B:
                 message.update({'side': 'B'})
             elif transaction.aggressor.side == Side.S:
@@ -246,6 +258,7 @@ class TransactionList:
             message.update({'price': int(transaction.traded_price)})
             message.update({'order-id': transaction.passive.id})
             message.update({'quantity': transaction.traded_quantity})
+            message.update({'instrument': transaction.instrument})
             # TODO: replace with the side_to_str function
             if transaction.passive.side == Side.B:
                 message.update({'side': 'B'})
@@ -271,6 +284,7 @@ class TransactionList:
             message.update({'side': side_to_str(transaction.passive.side)})
             message.update({'price': int(transaction.traded_price)})
             message.update({'order-id': transaction.passive.id})
+            message.update({'instrument': transaction.instrument})
 
             # Remove
             if transaction.passive.quantity_remaining == 0:
