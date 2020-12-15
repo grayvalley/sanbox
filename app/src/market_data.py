@@ -72,7 +72,7 @@ def _create_add_message_from_order(order):
     return message
 
 
-def _send_order_book_snapshot(state, client):
+def _send_order_book_snapshot(state, client, symbol):
     """
     Sends snapshot of the current state of the order book
     to the subscriber.
@@ -80,7 +80,7 @@ def _send_order_book_snapshot(state, client):
     """
     state.lock.acquire()
     messages = []
-    lob = state.get_current_lob_state()
+    lob = state.get_current_lob_state(symbol)
 
     # Send sell orders
     if (lob.asks is not None) and (len(lob.asks) > 0):
@@ -118,16 +118,25 @@ def handle_market_data_subscription(state, client):
     client.handshaken = True
 
     # Send current snapshot of the order book
-    _send_order_book_snapshot(state, client)
+    #
 
     # Start listening to the client market data requests
     while not state.stopper.is_set():
 
-            request = messaging.recv_data(client.socket, 4096)
-            if not request:
+            requests = messaging.recv_data(client.socket, 4096)
+            if not requests:
                 break
 
-            # TODO: Handle market data subscription messages
+            # Handle market data subscription messages
+            for request in requests:
+                op = request.get('op', None)
+                if op is not None:
+                    try:
+                        handler = market_data_message_handlers[op]
+                        handler(state, client, request)
+                    except KeyError as exc:
+                        # client send something with wrong key
+                        pass
 
     print(f'Market data subscription closed for client: {client}')
     state.remove_market_data_client(client)
@@ -137,7 +146,21 @@ def handle_market_data_subscription(state, client):
 def _handle_subscribe_request(state, client, request):
     """
     Handles new market data subscriptions.
+
+    Order book snapshot is always sent at the beginning of each subscription.
     """
+    args = request["args"]
+    for arg in args:
+        topic, symbol = arg.split(":")
+        symbol = int(symbol)
+        if topic == 'orderBookL2':
+            _send_order_book_snapshot(state, client, symbol)
+        elif topic == 'trade':
+            # TODO: send trade snapshot
+            pass
+        else:
+            # TODO: send not valid topic
+            pass
 
 
 def _handle_unsubscribe_request(state, client, request):
@@ -147,8 +170,8 @@ def _handle_unsubscribe_request(state, client, request):
 
 
 market_data_message_handlers = {
-    'S': _handle_subscribe_request,
-    'U': _handle_unsubscribe_request
+    'subscribe': _handle_subscribe_request,
+    'unsubscribe': _handle_unsubscribe_request
 }
 
 

@@ -164,6 +164,20 @@ def _handle_order_entry_cancel_order(state, client, order):
     state.lock.release()
 
 
+def _find_order_book(state, client, order):
+
+    order_book = None
+    success = False
+    try:
+        order_book = state.get_current_lob_state(order.instrument)
+        success = True
+    except KeyError as keyError:
+        message = _create_order_rejected_message(order, "Invalid symbol.")
+        messaging.send_data(client.socket, message, client.encoding)
+
+    return order_book, success
+
+
 def _handle_order_entry_add_or_modify_order(state, client, order):
     """
     Handles add order to LOB request received from a client
@@ -173,7 +187,10 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
 
     """
     state.lock.acquire()
-    lob = state.get_current_lob_state()
+
+    order_book, success = _find_order_book(state, client, order)
+    if not success:
+        return
 
     # Modification
     if order.order_id is not None:

@@ -110,7 +110,7 @@ class GlobalState:
         :return:
         """
         if symbol not in self._order_books:
-            raise ValueError(f"Symbol {symbol} not found!")
+            raise KeyError(f"Symbol {symbol} not found!")
         return self._order_books[symbol]
 
     def get_order_books(self):

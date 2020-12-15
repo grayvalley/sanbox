@@ -19,6 +19,15 @@ class ClientConnection:
         # Canceled orders
         self._canceled_orders = {}
 
+        # Market data subscriptions
+        self._market_data_subscriptions = {}
+
+    def add_market_data_subscription(self, topic, symbol):
+
+        if symbol not in self._market_data_subscriptions:
+            self._market_data_subscriptions.update({symbol: []})
+        self._market_data_subscriptions[symbol].append(topic)
+
     @property
     def uuid(self):
         return self._uuid

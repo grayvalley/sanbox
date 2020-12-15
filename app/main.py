@@ -31,6 +31,7 @@ format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=format, level=logging.INFO,
                     datefmt="%H:%M:%S")
 
+
 def main():
 
     config = ConfigReader("src/etc/config.ini")
@@ -82,7 +83,6 @@ def main():
                 limit_orders.append(order)
 
         # Add orders to order book
-        #lob = state.get_current_lob_state()
         order_books = state.get_order_books()
         for order_book in order_books:
             for order in limit_orders:
