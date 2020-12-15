@@ -31,7 +31,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/connection.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/connection.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/market_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/market_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/order_entry.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/order_entry.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -141,32 +140,32 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/market_data.py</url>
-          <line>198</line>
+          <line>221</line>
           <option name="timeStamp" value="88" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/market_data.py</url>
-          <line>201</line>
+          <line>224</line>
           <option name="timeStamp" value="89" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/market_data.py</url>
-          <line>193</line>
+          <line>216</line>
           <option name="timeStamp" value="113" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/market_data.py</url>
-          <line>194</line>
+          <line>217</line>
           <option name="timeStamp" value="114" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/market_data.py</url>
-          <line>196</line>
+          <line>219</line>
           <option name="timeStamp" value="115" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/market_data.py</url>
-          <line>203</line>
+          <line>226</line>
           <option name="timeStamp" value="116" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -185,9 +184,9 @@
           <option name="timeStamp" value="127" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/market_data.py</url>
-          <line>154</line>
-          <option name="timeStamp" value="128" />
+          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
+          <line>111</line>
+          <option name="timeStamp" value="134" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -22,6 +22,10 @@ class ClientConnection:
         # Market data subscriptions
         self._market_data_subscriptions = {}
 
+    @property
+    def subscriptions(self):
+        return self._market_data_subscriptions
+
     def add_market_data_subscription(self, topic, symbol):
         """
 
