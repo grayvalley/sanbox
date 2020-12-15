@@ -79,9 +79,15 @@ def _send_order_book_snapshot(state, client, symbol):
 
     """
     state.lock.acquire()
-    messages = []
-    lob = state.get_current_lob_state(symbol)
 
+    # Try to find order book corresponding to symbol
+    try:
+        lob = state.get_current_lob_state(symbol)
+    except KeyError as exc:
+        state.lock.release()
+        return
+
+    messages = []
     # Send sell orders
     if (lob.asks is not None) and (len(lob.asks) > 0):
         for price, order_list in reversed(lob.asks.price_map.items()):
@@ -150,6 +156,7 @@ def _handle_subscribe_request(state, client, request):
     for arg in args:
         topic, symbol = arg.split(":")
         symbol = int(symbol)
+        client.add_market_data_subscription(topic, symbol)
         if topic == 'orderBookL2':
             _send_order_book_snapshot(state, client, symbol)
         elif topic == 'trade':
@@ -187,24 +194,41 @@ def public_market_data_feed(config, state):
             # Get next event
             event = state.event_queue.get()
 
-            # TODO: get event market data type
-            # TODO: get clients who subscribed to this data
+            if event.message_type in ['A', 'X', 'M']:
+                for client in state.get_market_data_clients():
+                    if client.handshaken and client.snapshot_sent:
+                        subscriptions = client.subscriptions
+                        if event.instrument in subscriptions:
+                            topics = client.subscriptions[event.instrument]
+                            if 'orderBookL2' in topics:
+                                if not isinstance(event, dict):
+                                    message = event.get_message()
+                                    messaging.send_data(client.socket, message, client.encoding)
+                                else:
+                                    message = json.dumps(event)
+                                    messaging.send_data(client.socket, message, client.encoding)
 
-            for client in state.get_market_data_clients():
-                if client.handshaken and client.snapshot_sent:
-                    # TODO: all events should be normalized into same data type
-                    if not isinstance(event, dict):
-                        message = event.get_message()
-                        messaging.send_data(client.socket, message, client.encoding)
-                    else:
-                        message = json.dumps(event)
-                        messaging.send_data(client.socket, message, client.encoding)
-                else:
-                    print(" ")
-            if state.config.display == "BOOK":
-                state.get_current_lob_state(event.instrument).print()
-            elif state.config.display == "MESSAGES":
-                print(event)
+            elif event.message_type in ['E']:
+                pass
+
+            # # TODO: get event market data type
+            # # TODO: get clients who subscribed to this data
+            #
+            # for client in state.get_market_data_clients():
+            #     if client.handshaken and client.snapshot_sent:
+            #         # TODO: all events should be normalized into same data type
+            #         if not isinstance(event, dict):
+            #             message = event.get_message()
+            #             messaging.send_data(client.socket, message, client.encoding)
+            #         else:
+            #             message = json.dumps(event)
+            #             messaging.send_data(client.socket, message, client.encoding)
+            #     else:
+            #         print(" ")
+            # if state.config.display == "BOOK":
+            #     state.get_current_lob_state(event.instrument).print()
+            # elif state.config.display == "MESSAGES":
+            #     print(event)
         state.lock.release()
 
     print('Market data dispatching stopped.')

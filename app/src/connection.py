@@ -22,11 +22,26 @@ class ClientConnection:
         # Market data subscriptions
         self._market_data_subscriptions = {}
 
-    def add_market_data_subscription(self, topic, symbol):
+    @property
+    def subscriptions(self):
+        return self._market_data_subscriptions
 
+    def add_market_data_subscription(self, topic, symbol):
+        """
+
+        :param topic:
+        :param symbol:
+        :return:
+        """
         if symbol not in self._market_data_subscriptions:
             self._market_data_subscriptions.update({symbol: []})
-        self._market_data_subscriptions[symbol].append(topic)
+
+        symbol_subscriptions = self._market_data_subscriptions[symbol]
+
+        if topic not in symbol_subscriptions:
+            symbol_subscriptions.append(topic)
+
+        self._market_data_subscriptions[symbol] = symbol_subscriptions
 
     @property
     def uuid(self):
