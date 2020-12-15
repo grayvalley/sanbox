@@ -181,6 +181,7 @@ class InboundNewOrder:
         result.update({'price': self.price})
         result.update({'order_id': self.order_id})
         result.update({'trader_id': self.trader_id})
+        result.update({'instrument': self.instrument})
         return result
 
     def get_message(self):
@@ -202,7 +203,7 @@ class InboundNewOrder:
         msg.update({'timestamp': str(self.timestamp)})
         msg.update({'snapshot': 0})
 
-        return json.dumps(msg)
+        return msg
 
 
 class InboundCancelOrder:
@@ -212,6 +213,7 @@ class InboundCancelOrder:
         self._order_type = None
         self._order_id = None
         self._quantity = None
+        self._instrument = None
         self._trader_id = None
 
     @property
@@ -220,8 +222,18 @@ class InboundCancelOrder:
 
     @order_id.setter
     def order_id(self, value):
-        flag_wrong_instance_type(value, int)
+        flag_wrong_instance_type(value, int, 'order_id')
         self._order_id = value
+
+    @property
+    def instrument(self):
+        return self._instrument
+
+    @instrument.setter
+    def instrument(self, value):
+        if not isinstance(value, int):
+            raise TypeError(f'Instrument has to be <int>, was {type(value)}.')
+        self._instrument = value
 
     @property
     def trader_id(self):
@@ -238,7 +250,7 @@ class InboundCancelOrder:
 
     @quantity.setter
     def quantity(self, value):
-        flag_wrong_instance_type(value, int)
+        flag_wrong_instance_type(value, int, 'quantity')
         if value <= 0:
             self.valid = False
             self.error_message = 'Quantity has to be a positive integer.'
@@ -248,7 +260,7 @@ class InboundCancelOrder:
 
     @staticmethod
     def from_dict(dictionary):
-        order = InboundNewOrder()
+        order = InboundCancelOrder()
         for key, value in dictionary.items():
             setattr(order, key.replace('-', '_'), value)
         return order
