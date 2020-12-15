@@ -32,6 +32,7 @@ class Order(object):
         self.order_id = int(quote['order_id'])
         self.trader_id = quote.get('trader_id', None)
         self.side = quote['side']
+        self.instrument = quote['instrument']
 
         # doubly linked list to make it easier to re-order Orders for a particular price point
         self.next_order = None

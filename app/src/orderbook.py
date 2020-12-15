@@ -164,6 +164,7 @@ class OrderBook(object):
                 cancel.price = head_order.price
                 cancel.trader_id = head_order.trader_id
                 cancel.timestamp = self.time
+                cancel.instrument = head_order.instrument
                 smp_cancels.append(cancel)
 
             else:

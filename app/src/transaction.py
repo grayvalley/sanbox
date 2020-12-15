@@ -182,6 +182,7 @@ class Transaction:
         self._traded_quantity = int(value)
 
 
+# TODO: make property setters and getters with proper error handling
 class SelfMatchCancel:
 
     def __init__(self):
@@ -191,6 +192,7 @@ class SelfMatchCancel:
         self.price = None
         self.timestamp = None
         self.trader_id = None
+        self.instrument = None
 
 
 class TransactionList:
