@@ -3,11 +3,17 @@ import threading
 import json
 import uuid
 import jsonschema
+from datetime import datetime
+
 import src.handshake as handshake
 import src.messaging as messaging
 
 from src.side import (
     side_to_str
+)
+
+from src.order import (
+    order_type_to_str
 )
 
 from src.connection import (
@@ -17,6 +23,11 @@ from src.connection import (
 from src.soe import (
     MessageFactory
 )
+
+
+def unix_time_millis(dt):
+    epoch = datetime.utcfromtimestamp(0)
+    return int((dt - epoch).total_seconds() * 1000000.0)
 
 
 def accept_new_order_entry_clients(config, state):
@@ -164,6 +175,20 @@ def _handle_order_entry_cancel_order(state, client, order):
     state.lock.release()
 
 
+def _find_order_book(state, client, order):
+
+    order_book = None
+    success = False
+    try:
+        order_book = state.get_current_lob_state(order.instrument)
+        success = True
+    except KeyError as keyError:
+        message = _create_order_rejected_message(order, "Invalid symbol.")
+        messaging.send_data(client.socket, message, client.encoding)
+
+    return order_book, success
+
+
 def _handle_order_entry_add_or_modify_order(state, client, order):
     """
     Handles add order to LOB request received from a client
@@ -173,7 +198,10 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
 
     """
     state.lock.acquire()
-    lob = state.get_current_lob_state()
+
+    order_book, success = _find_order_book(state, client, order)
+    if not success:
+        return
 
     # Modification
     if order.order_id is not None:
@@ -183,7 +211,7 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
         messaging.send_data(client.socket, accept_message, client.encoding)
 
         # Modify order iin the LOB
-        lob.modify_order(order.order_id, order.to_lob_format(), None)
+        order_book.modify_order(order.order_id, order.to_lob_format(), None)
 
         # Save order to clients open orders
         client.orders[order.order_id] = order
@@ -192,7 +220,7 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
     else:
         # We do matching first because the order is new and we
         # need to generate order id for it.
-        transactions, order_in_book, smp_cancels = lob.process_order(
+        transactions, order_in_book, smp_cancels = order_book.process_order(
             order.to_lob_format(), False, False)
 
         # TODO: Wrap into a function
@@ -285,8 +313,14 @@ def _create_order_rejected_message(order, reason):
     """
     Creates an order rejected message from order
     """
+
     msg = {'message-type': 'R',
-           'order-id': order.order_id,
+           'instrument': order.instrument,
+           'side': side_to_str(order.side),
+           'quantity': int(order.quantity),
+           'price': float(order.price),
+           'timestamp': unix_time_millis(datetime.now()),
+           'order-type': order_type_to_str(order.order_type),
            'reason': reason
            }
     return json.dumps(msg)
@@ -313,7 +347,7 @@ def _create_order_accepted_message(order):
     """
     msg = {'message-type': 'Y',
            'instrument': order.instrument,
-           'order-type': order.order_type,
+           'order-type': order_type_to_str(order.order_type),
            'side': side_to_str(order.side),
            'quantity': int(order.quantity),
            'price': float(order.price),

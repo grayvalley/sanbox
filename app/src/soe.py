@@ -8,6 +8,11 @@ from .side import (
     side_to_str
 )
 
+from .order import (
+    OrderType,
+    order_type_to_str
+)
+
 _MESSAGE_TYPE_CONFIG = 'C'
 _MESSAGE_TYPE_NEW_ORDER = 'A'
 _MESSAGE_TYPE_CANCEL_ORDER = 'X'
@@ -106,7 +111,12 @@ class InboundNewOrder:
     @order_type.setter
     def order_type(self, value):
         flag_wrong_instance_type(value, str, 'order_type')
-        self._order_type = value
+        if value == 'LMT':
+            self._order_type = OrderType.Limit
+        elif value == 'MKT':
+            self._order_type = OrderType.Market
+        else:
+            raise ValueError("OrderType invalid.")
 
     @property
     def side(self):
@@ -175,7 +185,7 @@ class InboundNewOrder:
 
     def get_message(self):
         """
-        Transforms the event object into SDM format.
+        Transforms the event object into SMD format.
 
         Note: Snapshot is always 0 since these messages
         are obtained from clients who enter new orders
@@ -185,7 +195,7 @@ class InboundNewOrder:
         msg.update({'message-type': 'A'})
         msg.update({'instrument': self.instrument})
         msg.update({'order-id': self.order_id})
-        msg.update({'order-type': 'LMT'})
+        msg.update({'order-type': order_type_to_str(self.order_type)})
         msg.update({'quantity': int(self.quantity)})
         msg.update({'price': int(self.price)})
         msg.update({'side': side_to_str(self.side)})

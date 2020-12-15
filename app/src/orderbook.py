@@ -8,6 +8,10 @@ from decimal import (
     Decimal
 )
 
+from .order import (
+    OrderType
+)
+
 from .ordertree import (
     OrderTree
 )
@@ -60,10 +64,10 @@ class OrderBook(object):
         self.update_time()
         order['timestamp'] = self.time
 
-        if order_type == 'MKT':
+        if order_type == OrderType.Market:
             trades, smp_cancels = self.process_market_order(order, verbose)
 
-        elif order_type == 'LMT':
+        elif order_type == OrderType.Limit:
             order['price'] = Decimal(order['price'])
             trades, order_in_book, smp_cancels = self.process_limit_order(order, from_data, verbose)
         else:

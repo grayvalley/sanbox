@@ -1,5 +1,20 @@
 from decimal import * 
 import time, random
+from enum import Enum
+
+
+class OrderType(Enum):
+    Limit = 1
+    Market = 2
+
+
+def order_type_to_str(order_type):
+    if order_type == OrderType.Limit:
+        return 'LMT'
+    elif order_type == OrderType.Market:
+        return 'MKT'
+    else:
+        raise ValueError("Side not understood.")
 
 
 class Order(object):
