@@ -8,7 +8,11 @@ class GlobalState:
 
     def __init__(self, config):
         self._cfg = config
-        self._lob = OrderBook()
+
+        # OrderBooks
+        self._order_books = {}
+        #self._lob = OrderBook()
+
         self._event_queue = Queue()
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
@@ -38,6 +42,13 @@ class GlobalState:
     @property
     def event_queue(self):
         return self._event_queue
+
+    def add_order_book(self, symbol):
+
+        if symbol not in self._order_books:
+            self._order_books.update({symbol: OrderBook()})
+        else:
+            raise ValueError(f"Symbol: {symbol} already exists.")
 
     def get_market_data_clients(self):
         return self._market_data_clients
@@ -93,13 +104,17 @@ class GlobalState:
         with self._lock:
             self._market_data_clients.remove(client)
 
-    def get_current_lob_state(self):
+    def get_current_lob_state(self, symbol):
         """
         Returns a reference to the current LOB.
         :return:
         """
+        if symbol not in self._order_books:
+            raise ValueError(f"Symbol {symbol} not found!")
+        return self._order_books[symbol]
 
-        return self._lob
+    def get_order_books(self):
+        return self._order_books
 
     def add_to_event_queue(self, event):
 
