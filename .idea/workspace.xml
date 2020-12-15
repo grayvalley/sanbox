@@ -29,13 +29,7 @@
   <component name="ChangeListManager">
     <list default="true" id="348c4bc0-bfa1-4f77-8a29-ac91a7a8e14e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/etc/schema-cancel-order.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/etc/schema-cancel-order.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/market_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/market_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/order.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/order.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/order_entry.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/order_entry.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/orderbook.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/orderbook.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/soe.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/soe.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/transaction.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/transaction.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,7 +59,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cf.first.check.clang-format" value="false" />
     <property name="last_opened_file_path" value="$USER_HOME$/PycharmProjects/cryptodata" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -160,93 +154,33 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>166</line>
-          <option name="timeStamp" value="158" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>364</line>
+          <line>395</line>
           <option name="timeStamp" value="159" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>328</line>
-          <option name="timeStamp" value="161" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>312</line>
+          <line>343</line>
           <option name="timeStamp" value="162" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>229</line>
+          <line>260</line>
           <option name="timeStamp" value="163" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>337</line>
-          <option name="timeStamp" value="165" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>373</line>
+          <line>404</line>
           <option name="timeStamp" value="166" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>136</line>
-          <option name="timeStamp" value="167" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>139</line>
-          <option name="timeStamp" value="168" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>237</line>
+          <line>268</line>
           <option name="timeStamp" value="169" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/soe.py</url>
-          <line>53</line>
-          <option name="timeStamp" value="170" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/soe.py</url>
-          <line>265</line>
-          <option name="timeStamp" value="171" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>104</line>
-          <option name="timeStamp" value="172" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/soe.py</url>
-          <line>61</line>
-          <option name="timeStamp" value="174" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>141</line>
-          <option name="timeStamp" value="175" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>150</line>
-          <option name="timeStamp" value="177" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>381</line>
-          <option name="timeStamp" value="178" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/src/order_entry.py</url>
-          <line>170</line>
-          <option name="timeStamp" value="179" />
+          <line>352</line>
+          <option name="timeStamp" value="185" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
