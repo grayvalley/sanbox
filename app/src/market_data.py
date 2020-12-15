@@ -150,6 +150,7 @@ def _handle_subscribe_request(state, client, request):
     for arg in args:
         topic, symbol = arg.split(":")
         symbol = int(symbol)
+        client.add_market_data_subscription(topic, symbol)
         if topic == 'orderBookL2':
             _send_order_book_snapshot(state, client, symbol)
         elif topic == 'trade':

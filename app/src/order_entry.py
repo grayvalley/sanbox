@@ -297,7 +297,6 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
             order.timestamp = order_in_book['timestamp']
             state.event_queue.put(order)
 
-    #lob.print()
     state.lock.release()
 
 
