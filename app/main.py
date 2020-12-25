@@ -6,6 +6,10 @@ from src.state import (
     GlobalState
 )
 
+from src.order import (
+    OrderType
+)
+
 from src.config_reader import (
     ConfigReader
 )
@@ -68,7 +72,8 @@ def main():
         limit_orders = []
         for price in range(config.initial_best_ask, config.initial_best_ask + config.initial_book_levels):
             for i in range(0, config.initial_orders):
-                order = {'order_type': 'LMT',
+                order = {'instrument': 0,
+                         'order_type': OrderType.Limit,
                          'side': Side.S,
                          'quantity': config.initial_order_volume,
                          'price': price}
@@ -76,7 +81,8 @@ def main():
 
         for price in range(config.initial_best_bid, config.initial_best_bid - config.initial_book_levels, -1):
             for i in range(0, config.initial_orders):
-                order = {'order_type': 'LMT',
+                order = {'instrument': 0,
+                         'order_type': OrderType.Limit,
                          'side': Side.B,
                          'quantity': config.initial_order_volume,
                          'price': price}
@@ -84,7 +90,7 @@ def main():
 
         # Add orders to order book
         order_books = state.get_order_books()
-        for order_book in order_books:
+        for instrument_id, order_book in order_books.items():
             for order in limit_orders:
                 trades = order_book.process_order(order, False, False)
 

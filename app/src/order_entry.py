@@ -280,8 +280,8 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
             aggressor_messages, passive_messages = transactions.get_trade_messages()
 
             # Send order executed message(s) to the passive side of the transaction
-            # If passive_trader_id is None the order was simulated.
             for passive_trader_id, msg in passive_messages:
+                # If passive_trader_id is None the order was simulated and no message will be sent.
                 if passive_trader_id is not None:
                     passive_side_client = state.get_order_client_nts(passive_trader_id)
                     if passive_side_client is not None:

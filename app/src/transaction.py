@@ -6,6 +6,9 @@ from .side import (
     side_to_str
 )
 
+from .order import (
+    order_type_to_str
+)
 
 class PassiveParty:
 
@@ -236,7 +239,6 @@ class TransactionList:
 
             message = {}
             message.update({'message-type': 'E'})
-            message.update({'order-type': transaction.aggressor.order_type})
             message.update({'timestamp': str(transaction.timestamp)})
             message.update({'price': int(transaction.traded_price)})
             message.update({'order-id': transaction.aggressor.id})
@@ -253,7 +255,6 @@ class TransactionList:
         passive_messages = []
         for transaction in self._trade_list:
             message.update({'message-type': 'E'})
-            message.update({'order-type': "LMT"})
             message.update({'timestamp': str(transaction.timestamp)})
             message.update({'price': int(transaction.traded_price)})
             message.update({'order-id': transaction.passive.id})
