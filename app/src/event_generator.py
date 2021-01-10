@@ -23,7 +23,8 @@ import src.messaging as messaging
 
 class EventGenerator:
 
-    def __init__(self, thread_id, event_type, event_side, level, arrival_rate, tick_size):
+    def __init__(self, thread_id, instrument, event_type, event_side, level, arrival_rate, tick_size):
+        self._instrument = instrument
         self._thread_id = thread_id
         self._event_type = event_type
         self._event_side = event_side
@@ -36,6 +37,10 @@ class EventGenerator:
     @property
     def thread_id(self):
         return self._thread_id
+
+    @property
+    def instrument(self):
+        return self._instrument
 
     @property
     def arrival_rate(self):
@@ -62,7 +67,7 @@ class EventGenerator:
         Infers correct price level based on the reference level.
         """
 
-        lob = state.get_current_lob_state()
+        lob = state.get_current_lob_state(0)
 
         # Calculate peg, i.e. the offset w.r.t reference price
         peg = self.level * self.tick_size
@@ -101,7 +106,7 @@ class EventGenerator:
         TODO: get distribution parameters from configuration
         """
 
-        lob = state.get_current_lob_state()
+        lob = state.get_current_lob_state(0)
 
         if self.side == Side.B:  # buy market order
 
@@ -122,7 +127,7 @@ class EventGenerator:
         If order id cannot be generated function returns None.
 
         """
-        lob = state.get_current_lob_state()
+        lob = state.get_current_lob_state(0)
         if self.side == Side.B:
             if lob.bids.price_exists(price):
                 order_list = lob.bids.get_price_list(price)
@@ -166,6 +171,7 @@ class EventGenerator:
         'price': 97}
         """
         event = Add()
+        event.instrument = self.instrument
         event.price = self._infer_price_level(state)
         event.quantity = self._generate_random_limit_order_quantity(state)
         event.side = self.side
@@ -179,6 +185,7 @@ class EventGenerator:
         Format understood by the OrderBook:
         """
         event = Cancel()
+        event.instrument = self.instrument
         event.price = self._infer_price_level(state)
         event.order_id = self._choose_random_order_id(event.price, state)
         event.side = self.side
@@ -197,6 +204,7 @@ class EventGenerator:
          'trade_id': 111}
         """
         event = MarketOrder()
+        event.instrument = self.instrument
         event.quantity = self._generate_random_market_order_quantity(state, state)
         event.side = self.side
 
@@ -246,6 +254,7 @@ def _create_add_message_from_add_event(order):
     """
     message = {}
     message.update({"message-type": "A"})
+    message.update({"instrument": order["instrument"]})
     message.update({"order-id": order["order_id"]})
     message.update({"price": int(order["price"])})
     message.update({"quantity": int(order["quantity"])})
@@ -274,7 +283,7 @@ def event_generation_loop(state, generator):
 
         if event is not None:
 
-            lob = state.get_current_lob_state()
+            lob = state.get_current_lob_state(0)
 
             if event.event_type in [EventTypes.ADD]:
                 _, order_in_book, _ = lob.process_order(event.to_lob_format(), False, False)

@@ -122,8 +122,11 @@ def send_data(client, data, encoding):
 
 	if msg is not None:
 		# TODO: add error handling
-		return client.send(msg)
-
+		try:
+			return client.send(msg)
+		except Exception as e:
+			print(e)
+			return None
 
 def encode_char(string):
 	"""

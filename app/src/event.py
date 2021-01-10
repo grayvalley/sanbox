@@ -7,6 +7,10 @@ from .side import (
     side_to_str
 )
 
+from .order import (
+    OrderType,
+    order_type_to_str
+)
 
 class EventTypes(Enum):
     ADD = 1
@@ -112,7 +116,8 @@ class Add(Event):
         by the the OrderBook class.
         """
         result = {}
-        result.update({'order_type': 'LMT'})
+        result.update({'instrument': self.instrument})
+        result.update({'order_type': OrderType.Limit})
         result.update({'price': self.price})
         result.update({'side': self.side})
         result.update({'quantity': self.quantity})
@@ -129,8 +134,9 @@ class Add(Event):
         """
         message = {}
         message.update({'message-type': 'A'})
+        message.update({'instrument': self.instrument})
         message.update({'order-id': self.order_id})
-        message.update({'order-type': 'LMT'})
+        message.update({'order-type': OrderType.Limit})
         message.update({'quantity': int(self.quantity)})
         message.update({'price': int(self.price)})
         message.update({'side': side_to_str(self.side)})
@@ -166,6 +172,7 @@ class Cancel(Event):
         """
         result = {}
         result.update({'order_id': self.order_id})
+        result.update({'instrument': self.instrument})
         result.update({'type': 'cancel'})
         result.update({'side': self.side})
         result.update({'timestamp': self.str_timestamp})
@@ -175,6 +182,7 @@ class Cancel(Event):
     def get_message(self):
 
         message = {}
+        message.update({'instrument': self.instrument})
         message.update({'message-type': 'X'})
         message.update({'timestamp': self.str_timestamp})
         message.update({'order-id': self.order_id})
@@ -207,7 +215,8 @@ class MarketOrder(Event):
         """
         result = {}
 
-        result.update({'order_type': 'MKT'})
+        result.update({'order_type': OrderType.Market})
+        result.update({'instrument': self.instrument})
         result.update({'side': self.side})
         result.update({'quantity': self.quantity})
 

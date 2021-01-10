@@ -63,6 +63,7 @@ def _create_add_message_from_order(order):
     """
     message = {}
     message.update({"message-type": "A"})
+    message.update({"instrument": order.instrument})
     message.update({"order-id": order.order_id})
     message.update({"price": int(order.price)})
     message.update({"quantity": int(order.quantity)})
@@ -107,6 +108,7 @@ def _send_order_book_snapshot(state, client, symbol):
     for message in messages:
         message = json.dumps(message)
         messaging.send_data(client.socket, message, client.encoding)
+        time.sleep(0.0001)
 
     client.snapshot_sent = True
 
@@ -148,9 +150,7 @@ def handle_market_data_subscription(state, client):
 
 def _handle_subscribe_request(state, client, request):
     """
-    Handles new market data subscriptions.
-
-    Order book snapshot is always sent at the beginning of each subscription.
+    Handles new market data subscription requests.
     """
     args = request["args"]
     for arg in args:
@@ -158,6 +158,8 @@ def _handle_subscribe_request(state, client, request):
         symbol = int(symbol)
         client.add_market_data_subscription(topic, symbol)
         if topic == 'orderBookL2':
+            # Order book snapshot is always sent at the beginning of new market data subscription. The snapshot
+            # enables the market data subscribers to recover the current state of the order book.
             _send_order_book_snapshot(state, client, symbol)
         elif topic == 'trade':
             # TODO: send trade snapshot

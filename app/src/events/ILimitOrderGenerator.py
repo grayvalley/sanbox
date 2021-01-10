@@ -7,6 +7,7 @@ from Side import (
     SIDE
 )
 
+
 class ILimitOrderGenerator(IEventGenerator):
     """
     Implements common methods used by all limit order event
