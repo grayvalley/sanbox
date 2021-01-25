@@ -65,18 +65,26 @@ class OrderRequestHandler:
         pass
 
 
+def create_order_entry_socket(config):
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((config.order_entry_address, config.order_entry_port))
+    sock.listen(5)
+
+    return sock
+
+
 def accept_new_order_entry_clients(config, state):
 
     print(f"Order entry gateway listening {config.order_entry_address}:{config.order_entry_port}.")
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((config.order_entry_address, config.order_entry_port))
-    s.listen(5)
+    sock = create_order_entry_socket(config)
+
     while not state.stopper.is_set():
         try:
             # Accept incoming connection request
-            conn, addr = s.accept()
+            conn, addr = sock.accept()
             print('Order entry connection from:', addr)
 
             # Create order entry client connection
@@ -103,7 +111,7 @@ def accept_new_order_entry_clients(config, state):
             pass
 
     print('Closing order entry socket.')
-    s.close()
+    sock.close()
 
     print('Stopping order client threads...')
     for thread in state.get_order_client_threads():
@@ -164,6 +172,7 @@ def _handle_order_entry_cancel_order(state, client, order):
     and creates a response message.
     """
     state.lock.acquire()
+
     lob = state.get_current_lob_state(order.instrument)
 
     # Check if this client is the owner of the requested order id
@@ -408,6 +417,7 @@ def _create_remove_message(cancel):
            }
 
     return msg
+
 
 def _create_order_stub_add_message(order):
     """
