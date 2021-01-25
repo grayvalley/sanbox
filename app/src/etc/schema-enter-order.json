@@ -6,7 +6,7 @@
 		{
 			"properties": {
 				"instrument": {
-                    "type": "number"
+                    "type": "string"
 				},
 				"order-type": {
                     "type": "string",

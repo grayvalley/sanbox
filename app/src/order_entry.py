@@ -212,6 +212,31 @@ def _find_order_book(state, client, order):
 
     return order_book, success
 
+def _handle_modify_order(client, order, order_book):
+
+    # Send order accepted message
+    accept_message = _create_order_accepted_message(order.to_lob_format())
+    messaging.send_data(client.socket, accept_message, client.encoding)
+
+    # Modify order iin the LOB
+    order_book.modify_order(order.order_id, order.to_lob_format(), None)
+
+    # Save order to clients open orders
+    client.orders[order.order_id] = order
+
+
+def can_modify_order(request, order_book):
+    """
+    Determine if the
+    :param request:
+    :param order_book:
+    :return:
+    """
+
+    order = order_book.get_order(request.order_id)
+
+    return order != None
+
 
 def _handle_order_entry_add_or_modify_order(state, client, order):
     """
@@ -227,20 +252,11 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
     if not success:
         return
 
-    # Modification
-    if order.order_id is not None:
-
-        # Send order accepted message
-        accept_message = _create_order_accepted_message(order.to_lob_format())
-        messaging.send_data(client.socket, accept_message, client.encoding)
-
-        # Modify order iin the LOB
-        order_book.modify_order(order.order_id, order.to_lob_format(), None)
-
-        # Save order to clients open orders
-        client.orders[order.order_id] = order
+    if can_modify_order(order, order_book):
+        _handle_modify_order(client, order, order_book)
 
     # New order
+    # TODO: Write a function for this
     else:
         # We do matching first because the order is new and we
         # need to generate order id for it.

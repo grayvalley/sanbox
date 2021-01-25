@@ -86,6 +86,7 @@ def _send_order_book_snapshot(state, client, symbol):
         lob = state.get_current_lob_state(symbol)
     except KeyError as exc:
         state.lock.release()
+        # TODO: create error message
         return
 
     messages = []
@@ -155,7 +156,7 @@ def _handle_subscribe_request(state, client, request):
     args = request["args"]
     for arg in args:
         topic, symbol = arg.split(":")
-        symbol = int(symbol)
+        symbol = symbol
         client.add_market_data_subscription(topic, symbol)
         if topic == 'orderBookL2':
             # Order book snapshot is always sent at the beginning of new market data subscription. The snapshot

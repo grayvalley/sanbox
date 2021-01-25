@@ -138,8 +138,8 @@ class Transaction:
 
     @instrument.setter
     def instrument(self, value):
-        if not isinstance(value, int):
-            raise TypeError(f'Instrument has to be <int>, was {int}.')
+        if not isinstance(value, str):
+            raise TypeError(f'Transaction - Instrument has to be <int>, was {int}.')
         self._instrument = value
 
     @property

@@ -67,7 +67,7 @@ class EventGenerator:
         Infers correct price level based on the reference level.
         """
 
-        lob = state.get_current_lob_state(0)
+        lob = state.get_current_lob_state(self.instrument)
 
         # Calculate peg, i.e. the offset w.r.t reference price
         peg = self.level * self.tick_size
@@ -106,7 +106,7 @@ class EventGenerator:
         TODO: get distribution parameters from configuration
         """
 
-        lob = state.get_current_lob_state(0)
+        lob = state.get_current_lob_state(self.instrument)
 
         if self.side == Side.B:  # buy market order
 
@@ -127,7 +127,7 @@ class EventGenerator:
         If order id cannot be generated function returns None.
 
         """
-        lob = state.get_current_lob_state(0)
+        lob = state.get_current_lob_state(self.instrument)
         if self.side == Side.B:
             if lob.bids.price_exists(price):
                 order_list = lob.bids.get_price_list(price)
@@ -283,7 +283,7 @@ def event_generation_loop(state, generator):
 
         if event is not None:
 
-            lob = state.get_current_lob_state(0)
+            lob = state.get_current_lob_state("0")
 
             if event.event_type in [EventTypes.ADD]:
                 _, order_in_book, _ = lob.process_order(event.to_lob_format(), False, False)
