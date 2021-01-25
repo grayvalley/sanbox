@@ -8,7 +8,7 @@
 					"const": "X"
 				},
 				"instrument": {
-                    "type": "number"
+                    "type": "string"
 				},
                 "order-id": {
 					"type": "number"
