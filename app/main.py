@@ -64,15 +64,15 @@ def main():
 
     # TODO: put this into config
     # Add two books
-    state.add_order_book(0)
-    state.add_order_book(1)
+    state.add_order_book("0")
+    state.add_order_book("1")
 
     if config.simulate or config.initialize:
         # Initialize order books
         limit_orders = []
         for price in range(config.initial_best_ask, config.initial_best_ask + config.initial_book_levels):
             for i in range(0, config.initial_orders):
-                order = {'instrument': 0,
+                order = {'instrument': "0",
                          'order_type': OrderType.Limit,
                          'side': Side.S,
                          'quantity': config.initial_order_volume,
@@ -81,7 +81,7 @@ def main():
 
         for price in range(config.initial_best_bid, config.initial_best_bid - config.initial_book_levels, -1):
             for i in range(0, config.initial_orders):
-                order = {'instrument': 0,
+                order = {'instrument': "0",
                          'order_type': OrderType.Limit,
                          'side': Side.B,
                          'quantity': config.initial_order_volume,

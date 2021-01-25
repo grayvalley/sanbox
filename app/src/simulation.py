@@ -19,7 +19,7 @@ def run_market_data_simulation(config, state):
     # Create buy limit order add sampling threads
     n_levels = 15
     thread_id = 1
-    instrument = 0
+    instrument = "0"
     for level in range(1, n_levels + 1):
         generator = EventGenerator(thread_id, instrument, EventTypes.ADD, Side.B, level, 1.10 * np.exp(-0.08*(level - 1)), 1)
         kwargs = {'state': state, 'generator': generator}

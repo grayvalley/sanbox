@@ -101,7 +101,7 @@ class InboundNewOrder:
 
     @instrument.setter
     def instrument(self, value):
-        flag_wrong_instance_type(value, int, 'instrument')
+        flag_wrong_instance_type(value, str, 'instrument')
         self._instrument = value
 
     @property
@@ -231,8 +231,8 @@ class InboundCancelOrder:
 
     @instrument.setter
     def instrument(self, value):
-        if not isinstance(value, int):
-            raise TypeError(f'Instrument has to be <int>, was {type(value)}.')
+        if not isinstance(value, str):
+            raise TypeError(f'InboundCancelOrder - Instrument has to be <str>, was {type(value)}.')
         self._instrument = value
 
     @property
