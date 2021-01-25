@@ -212,6 +212,7 @@ def _find_order_book(state, client, order):
 
     return order_book, success
 
+
 def _handle_modify_order(client, order, order_book):
 
     # Send order accepted message
@@ -238,10 +239,81 @@ def can_modify_order(request, order_book):
     return order != None
 
 
+def _handle_transaction_messages(state, client, order_in_book, transactions):
+
+    # Generate trade messages
+    aggressor_messages, passive_messages = transactions.get_trade_messages()
+
+    # Send order executed message(s) to the passive side of the transaction
+    for passive_trader_id, msg in passive_messages:
+        # If passive_trader_id is None the order was simulated and no message will be sent.
+        if passive_trader_id is not None:
+            passive_side_client = state.get_order_client_nts(passive_trader_id)
+            if passive_side_client is not None:
+                messaging.send_data(
+                    passive_side_client.socket,
+                    json.dumps(msg),
+                    passive_side_client.encoding)
+
+    # Send order executed message(s) to the aggressing side of the transaction (client)
+    for msg in aggressor_messages:
+        messaging.send_data(client.socket, json.dumps(msg), client.encoding)
+
+    # Publish trade(s) via the public market data feed
+    for msg in aggressor_messages:
+        state.event_queue.put(msg)
+
+    # Publish remove and modify messages via the public market data feed
+    remove_and_modify_messages = transactions.get_remove_and_modify_messages()
+    for msg in remove_and_modify_messages:
+        state.event_queue.put(msg)
+
+    # Publish potential add message via the public market data feed
+    if order_in_book['quantity'] > 0:
+        state.event_queue.put(_create_order_stub_add_message(order_in_book))
+
+
+def _handle_insert_new_order(state, client, order, order_book):
+
+    # Insert the order to the book
+    transactions, order_in_book, cancels = order_book.process_order(
+        order.to_lob_format(), False, False)
+
+    if cancels:
+        _handle_self_match_prevention_cancels(state, client, cancels)
+
+    order.order_id  = order_in_book['order_id']
+    order.timestamp = order_in_book['timestamp']
+
+    client.orders[order.order_id] = order_in_book
+
+    messaging.send_data(client.socket, _create_order_accepted_message(order), client.encoding)
+
+    # If the new order was matched immediately
+    if not transactions.is_empty():
+        _handle_transaction_messages(state, client, order_in_book, transactions)
+    else:
+        state.event_queue.put(order.get_message())
+
+
+def _handle_self_match_prevention_cancels(state, client, cancels):
+
+    for cancel in cancels:
+        # Send OrderCanceled message to the client
+        cancel_message = _create_order_canceled_message(
+            cancel,
+            'Order canceled due to automatic Self-Match-Prevention.'
+        )
+        messaging.send_data(client.socket, cancel_message, client.encoding)
+
+        # Send remove messages trough public market data feed
+        remove_message = _create_remove_message(cancel)
+        state.event_queue.put(remove_message)
+
+
 def _handle_order_entry_add_or_modify_order(state, client, order):
     """
-    Handles add order to LOB request received from a client
-    and creates a response message.
+    Handles order entry or modify requests.
 
     TODO: rejection of order logic?
 
@@ -249,92 +321,14 @@ def _handle_order_entry_add_or_modify_order(state, client, order):
     state.lock.acquire()
 
     order_book, success = _find_order_book(state, client, order)
+
     if not success:
         return
 
     if can_modify_order(order, order_book):
         _handle_modify_order(client, order, order_book)
-
-    # New order
-    # TODO: Write a function for this
     else:
-        # We do matching first because the order is new and we
-        # need to generate order id for it.
-        transactions, order_in_book, smp_cancels = order_book.process_order(
-            order.to_lob_format(), False, False)
-
-        # TODO: Wrap into a function
-        # Handle messages related to Self-Match-Prevention
-        if smp_cancels:
-            for cancel in smp_cancels:
-
-                # Send OrderCanceled message to the client
-                cancel_message = _create_order_canceled_message(
-                    cancel,
-                    'Order canceled due to automatic Self-Match-Prevention.'
-                )
-                messaging.send_data(client.socket, cancel_message, client.encoding)
-
-                # Send remove messages trough public market data feed
-                remove_message = _create_remove_message(cancel)
-                state.event_queue.put(remove_message)
-
-        # TODO: Wrap into a function
-        # Order Accepted messages
-        order.order_id = order_in_book['order_id']
-        order.timestamp = order_in_book['timestamp']
-        accept_message = _create_order_accepted_message(order)
-        messaging.send_data(client.socket, accept_message, client.encoding)
-
-        # If the new order was matched immediately
-        if not transactions.is_empty():
-
-            # Save the order to the clients state
-            client.orders[order.order_id] = order_in_book
-
-            # Generate trade messages
-            aggressor_messages, passive_messages = transactions.get_trade_messages()
-
-            # Send order executed message(s) to the passive side of the transaction
-            for passive_trader_id, msg in passive_messages:
-                # If passive_trader_id is None the order was simulated and no message will be sent.
-                if passive_trader_id is not None:
-                    passive_side_client = state.get_order_client_nts(passive_trader_id)
-                    if passive_side_client is not None:
-                        messaging.send_data(
-                            passive_side_client.socket,
-                            json.dumps(msg),
-                            passive_side_client.encoding)
-
-            # Send order executed message(s) to the aggressing side of the transaction (client)
-            for msg in aggressor_messages:
-                messaging.send_data(client.socket, json.dumps(msg), client.encoding)
-
-            # Publish trade(s) via the public market data feed
-            for msg in aggressor_messages:
-                state.event_queue.put(msg)
-
-            # Publish remove and modify messages via the public market data feed
-            remove_and_modify_messages = transactions.get_remove_and_modify_messages()
-            for msg in remove_and_modify_messages:
-                state.event_queue.put(msg)
-
-            # Publish potential add message via the public market data feed
-            if order_in_book['quantity'] > 0:
-                stub_add_message = _create_order_stub_add_message(order_in_book)
-                state.event_queue.put(stub_add_message)
-
-        # If the new order was just placed in the book
-        else:
-
-            # Save the order to the clients state
-            client.orders[order.order_id] = order_in_book
-
-            # Publish the event via the public market data feed
-            # TODO: make this prettier
-            order.order_id = order_in_book['order_id']
-            order.timestamp = order_in_book['timestamp']
-            state.event_queue.put(order.get_message())
+        _handle_insert_new_order(state, client, order, order_book)
 
     state.lock.release()
 
